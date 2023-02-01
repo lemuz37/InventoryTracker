@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+<title>{% block title %}Sign Up{% endblock %}</title>>
+
+{% block content %}
+<form method="POST">
+    <h3 align="center">Sign Up</h3>
+    <div class="form-group">
+        <label for="email">Email Address</label>>
+        <input 
+        type="email" 
+        class="form-control" 
+        id="email" 
+        name="email" 
+        placeholder="Enter email"
+        />
+    </div>
+    <div class="form-group">
+        <label for="userName">User Name</label>>
+        <input 
+        type="text" 
+        class="form-control" 
+        id="userName" 
+        name="userName" 
+        placeholder="Enter user name"
+        />
+    </div>
+    <div class="form-group">
+        <label for="password1">Password</label>>
+        <input 
+        type="password" 
+        class="form-control" 
+        id="password1" 
+        name="password1" 
+        placeholder="Enter password"
+        />
+    </div>
+    <div class="form-group">
+        <label for="password2">Password (Confirm)</label>>
+        <input 
+        type="password" 
+        class="form-control" 
+        id="password2" 
+        name="password2" 
+        placeholder="Confirm password"
+        />
+    </div>
+
+    <div>
+    <select class="form-select " name="team" id="team">
+        <option selected>Select Team</option>
+        <option value="Automation">Automation</option>
+        <option value="Firmware">Firmware</option>
+        <option value="Software">Software</option>
+        <option value="System Test">System Test</option>
+    </select>
+    </div>
+
+    <br />
+
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="Admin" name="flexCheckChecked">
+      <label class="form-check-label" for="flexCheckChecked">
+        Admin
+      </label>
+    </div>
+
+    <br />
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>>
+{% endblock %}

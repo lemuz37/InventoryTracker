@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+<title>{% block title %}Home{% endblock %}</title>>
+
+{% block content %}
+<h1 align="center">User Devices</h1>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Device</th>
+                <th scope="col">Serial Number</th>
+                <th scope="col">Project</th>
+                <th scope="col">Location</th>
+                <th scope="col">Calibration Start Date</th>
+                <th scope="col">Calibration End Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for device in user.devices %}
+                {% if (device.calibrationEnd - today).days <= 0 %}
+                    <tr class="table-danger">
+                {% elif (device.calibrationEnd - today).days <= 30 %}
+                    <tr class="table-warning">
+                {% else %}
+                    <tr>
+                {% endif %}               
+                        <th scope="row">{{ device.device }}</th>
+                        <td>{{ device.serialNumber }}</td>
+                        <td>{{ device.project }}</td>
+                        <td>{{ device.location }}</td>
+                        <td>{{ device.calibrationStart }}</td>
+                        <td>{{ device.calibrationEnd }}</td>
+                        <td><button type="button" class="btn btn-primary" onClick="returnDevice({{ device.id }})">Return</button></td>
+                    </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<br />
+
+<div class = "container">
+    <div class="row">
+        <div class="col-12">
+            <h1 align="center">ECG Devices</h1>
+            <div class="table-responsive">
+                <!-- This table is for ECG devices -->
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Team</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Serial Number</th>
+                            <th scope="col">Project</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Calibration Start Date</th>
+                            <th scope="col">Calibration End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for device in devices %}
+                            {% if device.device == "ECG" %}
+                                {% if (device.calibrationEnd - today).days <= 0 %}
+                                    <tr class="table-danger">
+                                {% elif (device.calibrationEnd - today).days <= 30 %}
+                                    <tr class="table-warning">
+                                {% else %}
+                                    <tr>
+                                {% endif %}  
+                                        <th scope="row">{{ device.team }}</th>
+                                        <td>{{ device.user_name }}</td>
+                                        <td>{{ device.serialNumber }}</td>
+                                        <td>{{ device.project }}</td>
+                                        <td>{{ device.location }}</td>
+                                        <td>{{ device.calibrationStart }}</td>
+                                        <td>{{ device.calibrationEnd }}</td>
+                                        <td><button type="button" class="btn btn-primary" onClick="checkOutDevice({{ device.id }})">Check Out</button></td>
+                                    </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br />
+
+<div class = "container">
+    <div class="row">
+        <div class="col-12">
+            <h1 align="center">IQVitals Devices</h1>
+            <div class="table-responsive">
+                <!-- This table is for IQVitals Zone/Zoe devices -->
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Team</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Device</th>
+                            <th scope="col">Serial Number</th>
+                            <th scope="col">Project</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Calibration Start Date</th>
+                            <th scope="col">Calibration End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for device in devices %}
+                            {% if device.device == "IQVitals - Zone" or device.device == "IQVitals - Zoe" %}
+                                {% if (device.calibrationEnd - today).days <= 0 %}
+                                    <tr class="table-danger">
+                                {% elif (device.calibrationEnd - today).days <= 30 %}
+                                    <tr class="table-warning">
+                                {% else %}
+                                    <tr>
+                                {% endif %} 
+                                        <th scope="row">{{ device.team }}</th>
+                                        <td>{{ device.user_name }}</td>
+                                        <td>{{ device.device }}</td>
+                                        <td>{{ device.serialNumber }}</td>
+                                        <td>{{ device.project }}</td>
+                                        <td>{{ device.location }}</td>
+                                        <td>{{ device.calibrationStart }}</td>
+                                        <td>{{ device.calibrationEnd }}</td>
+                                        <td><button type="button" class="btn btn-primary" onClick="checkOutDevice({{ device.id }})">Check Out</button></td>
+                                    </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br />
+
+<div class = "container">
+    <div class="row">
+        <div class="col-12">
+            <h1 align="center">Spirometer Devices</h1>
+            <div class="table-responsive">
+                <!-- This table is for Digital Spriometer 56 & 57 series devices -->
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Team</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Device</th>
+                            <th scope="col">Serial Number</th>
+                            <th scope="col">Project</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Calibration Start Date</th>
+                            <th scope="col">Calibration End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for device in devices %}
+                            {% if device.device == "Digital Spirometer - 56 Series" or device.device == "Digital Spirometer - 57 Series" %}
+                                {% if (device.calibrationEnd - today).days <= 0 %}
+                                    <tr class="table-danger">
+                                {% elif (device.calibrationEnd - today).days <= 30 %}
+                                    <tr class="table-warning">
+                                {% else %}
+                                    <tr>
+                                {% endif %} 
+                                    <th scope="row">{{ device.team }}</th>
+                                    <td>{{ device.user_name }}</td>
+                                    <td>{{ device.device }}</td>
+                                    <td>{{ device.serialNumber }}</td>
+                                    <td>{{ device.project }}</td>
+                                    <td>{{ device.location }}</td>
+                                    <td>{{ device.calibrationStart }}</td>
+                                    <td>{{ device.calibrationEnd }}</td>
+                                    <td><button type="button" class="btn btn-primary" onClick="checkOutDevice({{ device.id }})">Check Out</button></td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br />
+
+<div class = "container">
+    <div class="row">
+        <div class="col-12">
+            <h1 align="center">Calibration Syringes</h1>
+            <div class="table-responsive">
+                <!-- This table is for Calibration Syringes devices -->
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Team</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Device</th>
+                            <th scope="col">Serial Number</th>
+                            <th scope="col">Project</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Calibration Start Date</th>
+                            <th scope="col">Calibration End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for device in devices %}
+                            {% if device.device == "Calibration Syringe" %}
+                                {% if (device.calibrationEnd - today).days <= 0 %}
+                                    <tr class="table-danger">
+                                {% elif (device.calibrationEnd - today).days <= 30 %}
+                                    <tr class="table-warning">
+                                {% else %}
+                                    <tr>
+                                {% endif %} 
+                                    <th scope="row">{{ device.team }}</th>
+                                    <td>{{ device.user_name }}</td>
+                                    <td>{{ device.device }}</td>
+                                    <td>{{ device.serialNumber }}</td>
+                                    <td>{{ device.project }}</td>
+                                    <td>{{ device.location }}</td>
+                                    <td>{{ device.calibrationStart }}</td>
+                                    <td>{{ device.calibrationEnd }}</td>
+                                    <td><button type="button" class="btn btn-primary" onClick="checkOutDevice({{ device.id }})">Check Out</button></td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br />
+
+<div class = "container">
+    <div class="row">
+        <div class="col-12">
+            <h1 align="center">Scales</h1>
+            <div class="table-responsive">
+                <!-- This table is for Scales -->
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Team</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Device</th>
+                            <th scope="col">Serial Number</th>
+                            <th scope="col">Project</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Calibration Start Date</th>
+                            <th scope="col">Calibration End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for device in devices %}
+                            {% if device.device == "Exam Chair - 625" or device.device == "Exam Chair - 626" %}
+                                {% if (device.calibrationEnd - today).days <= 0 %}
+                                    <tr class="table-danger">
+                                {% elif (device.calibrationEnd - today).days <= 30 %}
+                                    <tr class="table-warning">
+                                {% else %}
+                                    <tr>
+                                {% endif %} 
+                                    <th scope="row">{{ device.team }}</th>
+                                    <td>{{ device.user_name }}</td>
+                                    <td>{{ device.device }}</td>
+                                    <td>{{ device.serialNumber }}</td>
+                                    <td>{{ device.project }}</td>
+                                    <td>{{ device.location }}</td>
+                                    <td>{{ device.calibrationStart }}</td>
+                                    <td>{{ device.calibrationEnd }}</td>
+                                    <td><button type="button" class="btn btn-primary" onClick="checkOutDevice({{ device.id }})">Check Out</button></td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br />
+
+<div class = "container">
+    <div class="row">
+        <div class="col-12">
+            <h1 align="center">Simulators</h1>
+            <div class="table-responsive">
+                <!-- This table is for Simulators -->
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Team</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Device</th>
+                            <th scope="col">Serial Number</th>
+                            <th scope="col">Project</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Calibration Start Date</th>
+                            <th scope="col">Calibration End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for device in devices %}
+                            {% if device.device == "ProSim 4" or device.device == "ProSim 8" %}
+                                {% if (device.calibrationEnd - today).days <= 0 %}
+                                    <tr class="table-danger">
+                                {% elif (device.calibrationEnd - today).days <= 30 %}
+                                    <tr class="table-warning">
+                                {% else %}
+                                    <tr>
+                                {% endif %} 
+                                    <th scope="row">{{ device.team }}</th>
+                                    <td>{{ device.user_name }}</td>
+                                    <td>{{ device.device }}</td>
+                                    <td>{{ device.serialNumber }}</td>
+                                    <td>{{ device.project }}</td>
+                                    <td>{{ device.location }}</td>
+                                    <td>{{ device.calibrationStart }}</td>
+                                    <td>{{ device.calibrationEnd }}</td>
+                                    <td><button type="button" class="btn btn-primary" onClick="checkOutDevice({{ device.id }})">Check Out</button></td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br />
+
+<form method ="POST">
+    <div class="input-group mb-3">
+        <select class="form-select" name="device" id="device">
+            <option selected>Choose Device</option>
+            <option value="ECG">ECG</option>
+            <option value="IQVitals - Zone">IQVitals - Zone</option>
+            <option value="IQVitals - Zoe">IQVitals - Zoe</option>
+            <option value="Digital Spirometer - 56 Series">Digital Spriometer - 56 Series</option>
+            <option value="Digital Spirometer - 57 Series">Digital Spriometer - 57 Series</option>
+            <option value="Calibration Syringe">Calibration Syringe</option>
+            <option value="ProSim 4">ProSim 4</option>
+            <option value="ProSim 8">ProSim 8</option>
+            <option value="Exam Chair - 625">Exam Chair - 625</option>
+            <option value="Exam Chair - 626">Exam Chair - 626</option>
+        </select>
+        <input type="text" name="serialNumber" id="serialNumber" class="form-control" placeholder="Serial Number" aria-label="Serial Number">
+        <input type="text" name="project" id="project" class="form-control" placeholder="Project" aria-label="Project">
+        <input type="text" name="location" id="location" class="form-control" placeholder="Location" aria-label="Location">
+        <input type="date" name="calStart" id="calStart" class="form-control" placeholder="Calibration Start Date" aria-label="Calibration Start Date">
+        <input type="date" name="calEnd" id="calEnd" class="form-control" placeholder="Calibration End Date" aria-label="Calibration End Date">
+        <button type="submit" class="btn btn-outline-secondary">Add Device</button>
+    </div>
+</form>
+
+<br />
+{% endblock %}
