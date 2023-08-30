@@ -1,5 +1,5 @@
 function returnDevice(deviceID) {
-    fetch("/return-device", {
+    fetch("/return_device", {
         method: "POST",
         body: JSON.stringify({ deviceID: deviceID}),
     }).then((_res) => {
@@ -8,10 +8,10 @@ function returnDevice(deviceID) {
 }
 
 function checkOutDevice(deviceID) {
-    fetch("/check-out-device", {
+    fetch("/check_out_device", {
         method: "POST",
         body: JSON.stringify({ deviceID: deviceID}),
     }).then((_res) => {
-        window.location.href = "/";
+        window.location.href = "/devices";
     });
 }

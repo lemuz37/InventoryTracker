@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from os import path
 from flask_login import LoginManager
+from datetime import timedelta
 
 db = SQLAlchemy()
 DB_NAME = "database.db"
@@ -16,8 +16,6 @@ def create_app():
     from .auth import auth
     from . import models
 
-    
-
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
 
@@ -25,9 +23,6 @@ def create_app():
 
     with app.app_context():
         db.create_all()
-
-    # Deprecated
-    # create_database(app)
 
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
@@ -38,9 +33,3 @@ def create_app():
         return User.query.get(int(id))
 
     return app
-
-# Deprecated
-# def create_database(app):
-#     if not path.exists('website/' + DB_NAME):
-#         db.create_all(app=app)
-#         print('Created Database!')

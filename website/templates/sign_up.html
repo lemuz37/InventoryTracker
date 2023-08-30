@@ -1,70 +1,56 @@
 {% extends "base.html" %}
-<title>{% block title %}Sign Up{% endblock %}</title>>
+<title>{% block title %}Sign Up{% endblock %}</title>
 
 {% block content %}
-<form method="POST">
-    <h3 align="center">Sign Up</h3>
-    <div class="form-group">
-        <label for="email">Email Address</label>>
-        <input 
-        type="email" 
-        class="form-control" 
-        id="email" 
-        name="email" 
-        placeholder="Enter email"
-        />
-    </div>
-    <div class="form-group">
-        <label for="userName">User Name</label>>
-        <input 
-        type="text" 
-        class="form-control" 
-        id="userName" 
-        name="userName" 
-        placeholder="Enter user name"
-        />
-    </div>
-    <div class="form-group">
-        <label for="password1">Password</label>>
-        <input 
-        type="password" 
-        class="form-control" 
-        id="password1" 
-        name="password1" 
-        placeholder="Enter password"
-        />
-    </div>
-    <div class="form-group">
-        <label for="password2">Password (Confirm)</label>>
-        <input 
-        type="password" 
-        class="form-control" 
-        id="password2" 
-        name="password2" 
-        placeholder="Confirm password"
-        />
-    </div>
+<div class="row">
+    <div class="col-4"></div>
+    <div class="col-4" justify-content-center>
+        <form method="POST">
+            <br />
+            <br />
+            <h3 align="center">Sign Up</h3>
 
-    <div>
-    <select class="form-select " name="team" id="team">
-        <option selected>Select Team</option>
-        <option value="Automation">Automation</option>
-        <option value="Firmware">Firmware</option>
-        <option value="Software">Software</option>
-        <option value="System Test">System Test</option>
-    </select>
+            <div class="form-group">
+                <label for="userName">Username</label>
+                <input type="text" class="form-control" id="userName" name="userName"
+                    placeholder="Enter username (e.g., JDoe)" />
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="Enter email address" />
+            </div>
+
+            <div class="form-group">
+                <label for="password1">Password</label>
+                <input type="password" class="form-control" id="password1" name="password1"
+                    placeholder="Enter password" />
+            </div>
+
+            <div class="form-group">
+                <label for="password2">Password (Confirm)</label>
+                <input type="password" class="form-control" id="password2" name="password2"
+                    placeholder="Confirm password" />
+            </div>
+
+            <div class="form-row">
+                <div class="col-6 my-1">
+                    <label class="mr-sm-2 sr-only" for="team">Team</label>
+                    <select class="custom-select mr-sm-2" name="team" id="team">
+                        <option selected>Select Team</option>
+                        <option value="Automation">Automation</option>
+                        <option value="Hardware">Hardware</option>
+                        <option value="Software">Software</option>
+                        <option value="System Test">System Test</option>
+                    </select>
+                </div>
+                <div class="col-6 my-1">
+                    <button type="submit" class="btn float-right" style="background-color: #66cce7;">Submit</button>
+                </div>
+            </div>
+        </form>
     </div>
-
-    <br />
-
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" value="Admin" name="flexCheckChecked">
-      <label class="form-check-label" for="flexCheckChecked">
-        Admin
-      </label>
+    <div class="col-4">
     </div>
-
-    <br />
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form>>
+</div>
 {% endblock %}

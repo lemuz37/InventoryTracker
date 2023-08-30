@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from sqlalchemy import false
 from .models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
+from datetime import timedelta
 from flask_login import login_user, login_required, logout_user, current_user
 
 
@@ -11,14 +11,14 @@ auth = Blueprint('auth', __name__)
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
+        email = request.form.get('email').lower()
         password = request.form.get('password')
 
         user = User.query.filter_by(email=email).first()
         if user:
             if check_password_hash(user.password, password):
                 flash('Logged in successfully!', category = 'success')
-                login_user(user, remember=True)
+                login_user(user, remember=False, duration=timedelta(minutes=5))
                 return redirect(url_for('views.home'))
             else:
                 flash('Incorrect password', category='error')
@@ -33,15 +33,15 @@ def logout():
     logout_user()
     return redirect(url_for('auth.login'))
 
-@auth.route('/sign-up', methods=['GET', 'POST'])
+@auth.route('/sign_up', methods=['GET', 'POST'])
 def sign_up():
     if request.method == 'POST':
         # For debugging POST requests
-        data = request.form
-        print(data)
+        # data = request.form
+        # print(data)
         
         admin = request.form.get('flexCheckChecked')
-        email = request.form.get('email')
+        email = request.form.get('email').lower()
         user_name = request.form.get('userName')
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')

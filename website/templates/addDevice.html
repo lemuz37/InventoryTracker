@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+<title>{% block title %}Add Device{% endblock %}</title>>
+
+{% block content %}
+
+<div class="row">
+    <div class="col-4"></div>
+    <div class="col-4 text-center">
+        <br />
+        <h3 align="center">Add a Device</h3>
+        <form method="POST">
+            <div class="form-group">
+                <select class="form-control" name="device_category" id="device_category">
+                    <option selected>Select Device Category</option>
+                    <option value="ECG">ECG</option>
+                    <option value="Vitals">Vitals</option>
+                    <option value="Spirometer">Spirometer</option>
+                    <option value="Calibration Syringe">Calibration Syringe</option>
+                    <option value="Simulator">Simulator</option>
+                    <option value="Scales">Scales</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <input type="text" class="form-control" name="device_name" id="device_name"
+                    placeholder="Device Name" aria-label="Device Name" />
+            </div>
+
+            <div class="form-group">
+                <input type="text" class="form-control" name="serial_number" id="serial_number"
+                    placeholder="Serial Number" aria-label="Serial Number" />
+            </div>
+
+            <div class="form-group">
+                <input type="text" class="form-control" name="project" id="project" placeholder="Project"
+                    aria-label="Project" />
+            </div>
+
+            <div class="form-group">
+                <input type="text" class="form-control" name="location" id="location" placeholder="Location"
+                    aria-label="Location">
+            </div>
+
+            <div class="form-group">
+                <input type="date" name="calStart" id="calStart" class="form-control"
+                    placeholder="Calibration Start Date" aria-label="Calibration Start Date" />
+            </div>
+
+            <div class="form-group">
+                <input type="date" name="calEnd" id="calEnd" class="form-control" placeholder="Calibration End Date"
+                    aria-label="Calibration End Date" />
+                <small id="emailHelp" class="form-text text-muted">Note: Leave both calibration date fields empty when
+                   adding Non-Calibrated devices.</small>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn" style="background-color: #66cce7;">Add Device</button>
+            </div>
+    </div>
+    </form>
+    <div class="col-4"></div>
+</div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+<title>{% block title %}Home{% endblock %}</title>
+
+{% block content %}
+<br />
+<h3 align="center">Devices</h3>
+
+<div class="align-self-center">
+    <form method="POST">
+        <div class="form-row align-items-center">
+            <div class="col-3 my-1"></div>
+
+            <div class="col-auto my-1">
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    <label class="btn active" style="background-color: #66cce7;">
+                        <input type="radio" name="calibrated_devices" id="calibrated_device1" value="true" checked>
+                        Calibrated
+                    </label>
+                    <label class="btn" style="background-color: #e44d69;">
+                        <input type="radio" name="calibrated_devices" id="calibrated_device2" value="false">
+                        Non-Calibrated
+                    </label>
+                </div>
+            </div>
+            <div class="col-auto my-1">
+                <label class="mr-sm-2 sr-only" for="inlineFormCustomSelect">Device Category</label>
+                <select class="custom-select mr-sm-2" name="device_category" id="inlineFormCustomSelect">
+                    <option selected>Select Device Category</option>
+                    <option value="ECG">ECG</option>
+                    <option value="Vitals">Vitals</option>
+                    <option value="Spirometer">Spirometer</option>
+                    <option value="Calibration Syringe">Calibration Syringe</option>
+                    <option value="Simulator">Simulator</option>
+                    <option value="Scales">Scales</option>
+                </select>
+            </div>
+            <div class="col-auto my-1">
+                <button type="submit" class="btn" style="background-color: #66cce7;">Submit</button>
+            </div>
+        </div>
+        <div class="col-3 my-1"></div>
+    </form>
+</div>
+<br />
+
+{% if device_category == None or device_category == "Select Device Category"%}
+{% else %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            {% if device_category == "ECG" %}
+            <h1 align="center"> ECG Devices </h1>
+            {% elif device_category == "Vitals" %}
+            <h1 align="center"> Vitals Devices </h1>
+            {% elif device_category == "Spirometer" %}
+            <h1 align="center"> Spirometer Devices </h1>
+            {% elif device_category == "Calibration Syringe" %}
+            <h1 align="center"> Calibration Syringes </h1>
+            {% elif device_category == "Simulator" %}
+            <h1 align="center"> Simulators </h1>
+            {% elif device_category == "Scales" %}
+            <h1 align="center"> Scales </h1>
+            {% endif %}
+
+            <p>Type something in the input field to search the table for first names, last names or emails:</p> 
+            <input class="form-control" id="myInput" type="text" placeholder="Search..">
+            <br>
+
+            {% if calibrated_devices == "true" %}
+            <div class="table-responsive">
+                <table class="table table-striped" >
+                    <thead>
+                        <tr>
+                            <th scope="col">Team</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Device Name</th>
+                            <th scope="col">Serial Number</th>
+                            <th scope="col">Project</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Calibration Start Date</th>
+                            <th scope="col">Calibration End Date</th>
+                            <th scope="col">Check Out</th>
+                        </tr>
+                    </thead>
+                    <tbody id="myTable">
+                        {% for device in devices %}
+                        {% if device.device_category == device_category and device.calibrated == True %}
+                        {% if (device.calibrationEnd - today).days <= 0 %} <tr class="table-danger">
+                            {% elif (device.calibrationEnd - today).days <= 30 %} <tr class="table-warning">
+                                {% else %} <tr>
+                                    {% endif %}
+                                    <th scope="row">{{ device.team }}</th>
+                                    <td>{{ device.user_name }}</td>
+                                    <td>{{ device.device_name }}</td>
+                                    <td>{{ device.serial_number }}</td>
+                                    <td>{{ device.project }}</td>
+                                    <td>{{ device.location }}</td>
+                                    <td>{{ device.calibrationStart }}</td>
+                                    <td>{{ device.calibrationEnd }}</td>
+                                    <td><button type="button" class="btn" style="background-color: #66cce7;"
+                                            onClick="checkOutDevice({{device.id}})">Check Out</button></td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                                {% else %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Team</th>
+                                                <th scope="col">User</th>
+                                                <th scope="col">Device Name</th>
+                                                <th scope="col">Serial Number</th>
+                                                <th scope="col">Project</th>
+                                                <th scope="col">Location</th>
+                                                <th scope="col">Check Out</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="myTable">
+                                            {% for device in devices %}
+                                            {% if device.device_category == device_category and device.calibrated ==
+                                            False %}
+                                            <tr>
+                                                <th scope="row">{{ device.team }}</th>
+                                                <td>{{ device.user_name }}</td>
+                                                <td>{{ device.device_name }}</td>
+                                                <td>{{ device.serial_number }}</td>
+                                                <td>{{ device.project }}</td>
+                                                <td>{{ device.location }}</td>
+                                                <td><button type="button" class="btn" style="background-color: #66cce7;"
+                                                        onClick="checkOutDevice({{device.id}})">Check Out</button>
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                            {% endfor %}
+                                            {% endif %}
+                                    </table>
+                                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function(){
+          $("#myInput").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#myTable tr").filter(function() {
+              $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+          });
+        });
+    </script>
+    {% endif %}
+    {% endblock %}
