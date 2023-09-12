@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-<title>{% block title %}Add Device{% endblock %}</title>>
+<title>{% block title %}Add a Device{% endblock %}</title>>
 
 {% block content %}
 
@@ -7,7 +7,8 @@
     <div class="col-4"></div>
     <div class="col-4 text-center">
         <br />
-        <h3 align="center">Add a Device</h3>
+        <h2 align="center">Add a Device</h2>
+        <br/>
         <form method="POST">
             <div class="form-group">
                 <select class="form-control" name="device_category" id="device_category">
@@ -18,43 +19,45 @@
                     <option value="Calibration Syringe">Calibration Syringe</option>
                     <option value="Simulator">Simulator</option>
                     <option value="Scales">Scales</option>
+                    <option value="Engineering Tools">Engineering Tools</option>
                 </select>
             </div>
-
+            <br/>
             <div class="form-group">
                 <input type="text" class="form-control" name="device_name" id="device_name"
                     placeholder="Device Name" aria-label="Device Name" />
             </div>
-
+            <br/>
+            <div class="form-group">
+                <input type="text" class="form-control" name="model_number" id="model_number"
+                    placeholder="Model Number" aria-label="Model Number" />
+            </div>
+            <br/>
             <div class="form-group">
                 <input type="text" class="form-control" name="serial_number" id="serial_number"
                     placeholder="Serial Number" aria-label="Serial Number" />
             </div>
-
-            <div class="form-group">
-                <input type="text" class="form-control" name="project" id="project" placeholder="Project"
-                    aria-label="Project" />
-            </div>
-
+            <br/>
             <div class="form-group">
                 <input type="text" class="form-control" name="location" id="location" placeholder="Location"
                     aria-label="Location">
             </div>
-
+            <br/>
             <div class="form-group">
                 <input type="date" name="calStart" id="calStart" class="form-control"
                     placeholder="Calibration Start Date" aria-label="Calibration Start Date" />
             </div>
-
+            <br/>
             <div class="form-group">
                 <input type="date" name="calEnd" id="calEnd" class="form-control" placeholder="Calibration End Date"
                     aria-label="Calibration End Date" />
-                <small id="emailHelp" class="form-text text-muted">Note: Leave both calibration date fields empty when
-                   adding Non-Calibrated devices.</small>
             </div>
+            <br/>
 
             <div class="form-group">
-                <button type="submit" class="btn" style="background-color: #66cce7;">Add Device</button>
+                <button type="submit" class="btn btn-sm btn-custom btn-update">Add Device</button>
+                <br/>
+                <small id="emailHelp" class="form-text text-muted">To add a Non-Calibrated device, leave both date fields empty.</small>
             </div>
     </div>
     </form>

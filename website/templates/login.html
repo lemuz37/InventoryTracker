@@ -2,31 +2,125 @@
 <title>{% block title %}Login{% endblock %}</title>
 
 {% block content %}
-<div class="d-flex justify-content-center align-items-center"
-    style="width:100%; height:85%; position:fixed; left:0;top:100;overflow:hidden;">
-    <form method="POST">
-        <h3 align="center">Login</h3>
-        <br />
-        <div class="form-group">
-            <label for="email">Email Address</label>
-            <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" />
+<br />
+<br />
+<br />
+<br />
+<br />
+
+<div
+  class="d-flex justify-content-center align-items-center h-100"
+>
+  <form method="POST">
+    <h3 align="center">Login</h3>
+    <br />
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input
+        type="email"
+        class="form-control"
+        id="email"
+        name="email"
+        placeholder="Enter email"
+      />
+    </div>
+    <br />
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input
+        type="password"
+        class="form-control"
+        id="password"
+        name="password"
+        placeholder="Enter password"
+      />
+    </div>
+
+    <br />
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 text-center" width=100%>
+          <button type="submit" class="btn btn-custom btn-update">Login</button>
         </div>
+        <div class="col-md-6 text-center">
+              <!-- Button trigger modal -->
+    <button
+    type="button"
+    class="btn btn-custom btn-edit"
+    data-bs-toggle="modal"
+    data-bs-target="#scanQRCodeModal"
+  >
+  Login with QR Code
+  </button>
 
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" />
+  <!-- Modal -->
+  <div
+    class="modal fade"
+    id="scanQRCodeModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="scanQRCodeModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="scanQRCodeModalLabel">Login with QR Code</h5>
+          <button
+            type="button"
+            class="close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
-
-        <br />
-
-        <div class="container">
+        <div class="modal-body">
+          <div class="container-fluid">
             <div class="row">
-              <div class="col text-center">
-                <button type="submit" class="btn" style="background-color: #66cce7;">Login</button>
+              <div class="col-md-2"></div>
+              <div class="col-md-8">
+                <div class="form-group">
+                  <input
+                    type="password"
+                    class="form-control"
+                    name="scan_data_home"
+                    id="scan_data_home"
+                    placeholder="Scan Data"
+                    aria-label="Scan Data"
+                  />
+                </div>
               </div>
+              <div class="col-md-2"></div>
             </div>
           </div>
-    </form>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            class="btn"
+            style="background-color: #66cce7"
+            onClick="login_w_qr_code({{user.id}})"
+          >
+            Sign In
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        </div>
+      </div>
+    </div>
+  </form>
 </div>
 
 {% endblock %}

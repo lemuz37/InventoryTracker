@@ -1,0 +1,107 @@
+/* Header Styles */
+.header {
+  position: sticky;
+  top: 0;
+}
+
+.nav-logo {
+  margin-left: 25px;
+  margin-right: 15px;
+}
+
+.nav-link {
+  color: #e44d69;
+}
+
+/* Flex Container Styles */
+.flex-container {
+  display: flex;
+  gap: 10px;
+}
+
+.flex-container > * {
+  flex: 1;
+}
+
+/* Custom Button Styles */
+.custom-button-bgrnd,
+.btn-custom,
+.btn-edit,
+.btn-update,
+.btn-assign,
+.btn-delete,
+.btn-calibrated,
+.btn-non-calibrated {
+  padding: 6px 12px;
+  border-radius: 4px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.custom-button-bgrnd {
+  background-color: #66cce7;
+}
+
+.btn-edit {
+  background-color: #e44d69;
+  color: white;
+}
+
+.btn-update {
+  background-color: #66cce7;
+  color: black;
+}
+
+.btn-assign,
+.btn-calibrated {
+  background-color: #66cce7;
+}
+
+.btn-delete {
+  background-color: red;
+}
+
+.btn-non-calibrated {
+  background-color: #e44d69;
+  color: white;
+}
+
+/* Device Table Styles */
+#device_table tbody tr {
+  height: 20px;
+}
+
+#device_table tbody td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Alert Styles */
+.alert {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Table Styles */
+#cal_device_table tbody td {
+  overflow: hidden;
+  text-overflow: ellipsis; /* This will show '...' for overflowing text content */
+  white-space: nowrap; /* This will prevent content from wrapping to the next line */
+}
+
+.table td {
+  vertical-align: middle;
+  height: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis; /* This will show '...' for overflowing text content */
+  white-space: nowrap; /* This will prevent content from wrapping to the next line */
+}
+
+/* Button Hover Styles */
+.btn-calibrated.btn-outline-primary:hover,
+.btn-non-calibrated.btn-outline-primary:hover {
+  color: white;
+}

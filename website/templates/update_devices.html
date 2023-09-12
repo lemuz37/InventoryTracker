@@ -1,135 +1,107 @@
 {% extends "base.html" %}
-<title>{% block title %}Home{% endblock %}</title>>
+<title>{% block title %}Update Devices{% endblock %}</title>>
 
 {% block content %}
 <br />
-<h3 align="center">Update Devices</h3>
-<div class="align-self-center">
-    <form method="POST">
-        <div class="form-row align-items-center">
-            <div class="col-3 my-1"></div>
+<h2 align="center">Update Devices</h2>
 
-            <div class="col-auto my-1">
-                <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                    <label class="btn active" style="background-color: #66cce7;">
-                        <input type="radio" name="calibrated_devices" id="calibrated_device1" value="true" checked>
-                        Calibrated
-                    </label>
-                    <label class="btn" style="background-color: #e44d69;">
-                        <input type="radio" name="calibrated_devices" id="calibrated_device2" value="false">
-                        Non-Calibrated
-                    </label>
-                </div>
-            </div>
-            <div class="col-auto my-1">
-                <label class="mr-sm-2 sr-only" for="inlineFormCustomSelect">Device Category</label>
-                <select class="custom-select mr-sm-2" name="device_category" id="inlineFormCustomSelect">
-                    <option selected>Select Device Category</option>
-                    <option value="ECG">ECG</option>
-                    <option value="Vitals">Vitals</option>
-                    <option value="Spirometer">Spirometer</option>
-                    <option value="Calibration Syringe">Calibration Syringe</option>
-                    <option value="Simulator">Simulator</option>
-                    <option value="Scales">Scales</option>
-                </select>
-            </div>
-            <div class="col-auto my-1">
-                <button name="device_category_selection" type="submit" class="btn"
-                    style="background-color: #66cce7;">Submit</button>
-            </div>
+<form method="POST">
+    <div class="row justify-content-center">
+        <div class="col-auto my-1">
+            <select class="form-select" name="device_category">
+                <option selected>Select Device Category</option>
+                <option value="ECG">ECG</option>
+                <option value="Vitals">Vitals</option>
+                <option value="Spirometer">Spirometer</option>
+                <option value="Calibration Syringe">Calibration Syringe</option>
+                <option value="Simulator">Simulator</option>
+                <option value="Scales">Scales</option>
+                <option value="Engineering Tools">Engineering Tools</option>
+              </select>
         </div>
-        <div class="col-3 my-1"></div>
-    </form>
-</div>
+        <div class="col-auto my-1">
+            <button name="device_category_selection" type="submit" class="btn btn-sm btn-custom btn-update"
+                >Submit</button>
+        </div>
+    </div>
+</form>
 <br />
 {% if device_category == None or device_category == "Select Device Category"%}
 {% else %}
-{% set count = namespace(value=-1) %}
 <div class="container">
     <div class="row">
         <div class="col-12">
             {% if device_category == "ECG" %}
-            <h1 align="center"> ECG Devices </h1>
+            <h2 align="center"> ECG Devices </h2>
             {% elif device_category == "Vitals" %}
-            <h1 align="center"> Vitals Devices </h1>
+            <h2 align="center"> Vitals Devices </h2>
             {% elif device_category == "Spirometer" %}
-            <h1 align="center"> Spirometer Devices </h1>
+            <h2 align="center"> Spirometer Devices </h2>
             {% elif device_category == "Calibration Syringe" %}
-            <h1 align="center"> Calibration Syringes </h1>
+            <h2 align="center"> Calibration Syringes </h2>
             {% elif device_category == "Simulator" %}
-            <h1 align="center"> Simulators </h1>
+            <h2 align="center"> Simulators </h2>
             {% elif device_category == "Scales" %}
-            <h1 align="center"> Scales </h1>
+            <h2 align="center"> Scales </h2>
+            {% elif device_category == "Engineering Tools" %}
+            <h2 align="center"> Engineering Tools </h2>
             {% endif %}
 
             <form method="POST">
                 <div class="table-responsive">
-                    <table class="table table-striped">
+                    <table class="table table-bordered table-striped table-sm" cellspacing="0" width="100%" id="update_device_table">
                         <thead>
                             <tr>
-                                <th scope="col">Device</th>
-                                <th scope="col">Serial Number</th>
-                                <th scope="col">Team</th>
-                                <th scope="col">Project</th>
-                                <th scope="col">Location</th>
-                                <th scope="col">Calibration Start</th>
-                                <th scope="col">Calibration End</th>
-                                <th scope="col">Update</th>
+                                {% if user.admin == True %}
+                                <th scope="col" class="text-center" >Device Category</th>
+                                {% endif %}
+                                <th scope="col" class="text-center" style="width: 200px;">Device Name</th>
+                                <th scope="col" class="text-center" style="width: 175px;">Model Number</th>
+                                <th scope="col" class="text-center" style="width: 150px;">Serial Number</th>
+                                <th scope="col" class="text-center" >Calibration Start</th>
+                                <th scope="col" class="text-center" >Calibration End</th>
+                                <th scope="col" class="text-center" >Project</th>
+                                <th scope="col" class="text-center" >Location</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for device in devices %}
-                            {% if calibrated_devices=="true" %}
-                            {% if device.device_category == device_category and device.calibrated == true%}
-                            {% set count.value = count.value + 1 %}
+                            {% if device.device_category == device_category%}
                             <tr>
-                                <th scope="row">{{ device.device_name }}</th>
-                                <td>{{ device.serial_number }}</td>
-                                <td><select class="form-select" name="team" id="team">
-                                        <option selected>Select Team</option>
-                                        <option value="Automation">Automation</option>
-                                        <option value="Hardware">Hardware</option>
-                                        <option value="Software">Software</option>
-                                        <option value="System Test">System Test</option>
-                                    </select></td>
-                                <td><input type="text" name="project" id="project" class="form-control"
+                                {% if user.admin == True %}
+                                <td class="text-center">
+                                    <select class="form-control" name="device_category_{{device.id}}" id="device_category_{{device.id}}">
+                                        <option selected>Select Device Category</option>
+                                        <option value="ECG">ECG</option>
+                                        <option value="Vitals">Vitals</option>
+                                        <option value="Spirometer">Spirometer</option>
+                                        <option value="Calibration Syringe">Calibration Syringe</option>
+                                        <option value="Simulator">Simulator</option>
+                                        <option value="Scales">Scales</option>
+                                        <option value="Engineering Tools">Engineering Tools</option>
+                                    </select>
+                                </td>
+                                <td class="text-center"><input type="text" name="device_name_{{device.id}}" id="device_name_{{device.id}}" class="form-control"
+                                    placeholder="{{device.device_name}}" aria-label="{{device.device_name}}"></td>
+                                <td class="text-center"><input type="text" name="model_number_{{device.id}}" id="model_number_{{device.id}}" class="form-control"
+                                    placeholder="{{device.model_number}}" aria-label="{{device.model_number}}"></td>
+                                <td class="text-center"><input type="text" name="serial_number_{{device.id}}" id="serial_number_{{device.id}}" class="form-control"
+                                    placeholder="{{device.serial_number}}" aria-label="{{device.serial_number}}"></td>
+                                {% else %}
+                                    <td class="text-center">{{device.device_name}}</td>
+                                    <td class="text-center">{{device.model_number}}</td>
+                                    <td class="text-center">{{device.serial_number}}</td>
+                                {% endif %}
+                                <td class="text-center"><input type="date" name="calStart_{{device.id}}" id="calStart_{{device.id}}" class="form-control"
+                                    placeholder="Calibration Start Date" aria-label="Calibration Start Date"></td>
+                                <td class="text-center"><input type="date" name="calEnd_{{device.id}}" id="calEnd_{{device.id}}" class="form-control"
+                                    placeholder="Calibration End Date" aria-label="Calibration End Date"></td>
+                                <td class="text-center"><input type="text" name="project_{{device.id}}" id="project_{{device.id}}" class="form-control"
                                         placeholder="Project" aria-label="Project"></td>
-                                <td><input type="text" name="location" id="location" class="form-control"
+                                <td class="text-center"><input type="text" name="location_{{device.id}}" id="location_{{device.id}}" class="form-control"
                                         placeholder="Location" aria-label="Location"></td>
-                                <td><input type="date" name="calStart" id="calStart" class="form-control"
-                                        placeholder="Calibration Start Date" aria-label="Calibration Start Date"></td>
-                                <td><input type="date" name="calEnd" id="calEnd" class="form-control"
-                                        placeholder="Calibration End Date" aria-label="Calibration End Date"></td>
-                                <td style="text-align:right"><input class="form-check-input" type="checkbox"
-                                        value={{device.id}},{{count.value}} name="update"></td>
-
+                                
                             </tr>
-                            {% endif %}
-                            {% elif calibrated_devices=="false" %}
-                            {% if device.device_category == device_category and device.calibrated == false%}
-                            {% set count.value = count.value + 1 %}
-                            <tr>
-                                <th scope="row">{{ device.device_name }}</th>
-                                <td>{{ device.serial_number }}</td>
-                                <td><select class="form-select" name="team" id="team">
-                                        <option selected>Select Team</option>
-                                        <option value="Automation">Automation</option>
-                                        <option value="Hardware">Hardware</option>
-                                        <option value="Software">Software</option>
-                                        <option value="System Test">System Test</option>
-                                    </select></td>
-                                <td><input type="text" name="project" id="project" class="form-control"
-                                        placeholder="Project" aria-label="Project"></td>
-                                <td><input type="text" name="location" id="location" class="form-control"
-                                        placeholder="Location" aria-label="Location"></td>
-                                <td><input type="date" name="calStart" id="calStart" class="form-control"
-                                        placeholder="Calibration Start Date" aria-label="Calibration Start Date"></td>
-                                <td><input type="date" name="calEnd" id="calEnd" class="form-control"
-                                        placeholder="Calibration End Date" aria-label="Calibration End Date"></td>
-                                <td style="text-align:right"><input class="form-check-input" type="checkbox"
-                                        value={{device.id}},{{count.value}} name="update"></td>
-                            </tr>
-                            {% endif %}
                             {% endif %}
                             {% endfor %}
                         </tbody>
@@ -139,10 +111,15 @@
     </div>
 </div>
 <br />
+<input type="hidden" name="device_category" class="form-control"
+            id="device_category" value="{{device_category}}" ></input>
 
 <div align="center">
-    <button name="update_devices" type="submit" class="btn" style="background-color: #66cce7;">Update Device(s)</button>
+    <button name="update_devices" type="submit" class="btn btn-custom btn-edit">Update Device(s)</button>
 </div>
+
 </form>
+<br/>
+<br/>
 {% endif %}
 {% endblock %}
