@@ -1,4 +1,21 @@
 // User-related functions
+function checkoutDevice(deviceID) {
+  // Send a POST request to /delete_device in views.py
+  fetch("/checkout_device", {
+    method: "POST",
+    body: JSON.stringify({ deviceID: deviceID }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        // Reload the same page the user is currently on if successful
+        window.location.href = window.location.href;
+      } else {
+        // Show an alert message with the error message
+        alert(data.message);
+      }
+    });
+}
 // Function for logging in with a QR code
 function login_w_qr_code(userId) {
   // Retrieve data from the modal form
@@ -156,7 +173,7 @@ function deleteDevice(deviceID) {
   })
     // Reload the /devices window
     .then((_res) => {
-      window.location.href = "/devices";
+      window.location.href = window.location.href;
     });
 }
 function editUser(userId) {
@@ -287,125 +304,26 @@ function deleteUser(userID) {
     });
 }
 
-// DataTable initialization
-
-// Data table for user calibrated devices.
-$(document).ready(function () {
-  $("#home_calibrated").DataTable({
-    scrollY: "50vh", // Vertical scrolling. Here, 'vh' stands for viewport height. You can also set it in pixels e.g., '300px'.
-    scrollX: true, // Horizontal scrolling.
-    scrollCollapse: true,
-    paging: true, // Enable pagination
-    lengthMenu: [5, 10, 15, 20, 25, 50, 100],
-    pageLength: 5, // Number of rows per page
-  });
-});
-
-// Data table for user non-calibrated devices.
-$(document).ready(function () {
-  $("#home_noncalibrated").DataTable({
-    scrollY: "50vh", // Vertical scrolling. Here, 'vh' stands for viewport height. You can also set it in pixels e.g., '300px'.
-    scrollX: true, // Horizontal scrolling.
-    scrollCollapse: true,
-    paging: true, // Enable pagination
-    lengthMenu: [5, 10, 15, 20, 25, 50, 100],
-    pageLength: 5, // Number of rows per page
-    // Add more options as needed
-  });
-});
-
-// Data table for calibrated devices page.
-$(document).ready(function () {
-  $("#cal_device_table").DataTable({
-    paging: true,
-    lengthMenu: [5, 10, 15, 20, 25, 50, 100],
-    pageLength: 5,
-    dom: '<"top">rt<"bottom"Bip><"clear">', // Customize the DataTable's layout
-    buttons: [
-      {
-        extend: "csv",
-        text: "Export to CSV",
-        className: "btn-custom btn-update",
-        exportOptions: {
-          columns: [1, 2, 3, 4, 5, 6, 7, 8],
-        },
-      },
-    ],
-  });
-
-  // Modify the layout of the "Show entries" dropdown and "Search" input
-  $(".dataTables_length").addClass("pull-left"); // Move the length dropdown to the left
-  $(".dataTables_filter").addClass("pull-right"); // Move the search input to the right
-});
-
-// Data table for noncalibrated devices page.
-$(document).ready(function () {
-  $("#noncal_device_table").DataTable({
-    paging: true, // Enable pagination
-    lengthMenu: [5, 10, 15, 20, 25, 50, 100],
-    pageLength: 5, // Number of rows per page
-    // Number of rows per page
-    dom: "Bfrtip",
-    buttons: [
-      {
-        extend: "csv",
-        text: "Export to CSV",
-        className: "btn-custom btn-update",
-        exportOptions: {
-          columns: [1, 2, 3, 4, 5, 6], // Replace these index numbers with those of the columns you want to export
-        },
-      },
-    ],
-  });
-});
-
-// Data table for update devices page.
-$(document).ready(function () {
-  $("#update_device_table").DataTable({
-    paging: true, // Enable pagination
-    lengthMenu: [5, 10, 15, 20, 25, 50, 100],
-    pageLength: 5, // Number of rows per page
-  });
-});
-
-// Data table for user page.
-$(document).ready(function () {
-  $("#user_table").DataTable({
-    paging: true, // Enable pagination
-    pageLength: 5, // Number of rows per page
-    lengthMenu: [5, 10, 15, 20, 25, 50, 100],
-    // Add more options as needed
-  });
-});
-
-// Event handling for modals and inactivity
-
-// Focus on input field when scan device modal opens
-$("#scanDeviceModal").on("shown.bs.modal", function () {
-  $(this).find("#scan_data").focus().select();
-});
-
-// Focus on input field when scan device modal opens
-$("#scanQRCodeModal").on("shown.bs.modal", function () {
-  $(this).find("#scan_data_home").focus().select();
-});
-
 // Handle radio button on device page.
-function handleRadioClick(radioButton) {
-  const labels = document.querySelectorAll("label[for^='calibrated_device']");
-
-  labels.forEach((label) => {
-    label.classList.remove("btn-selected");
-  });
-
-  radioButton.nextElementSibling.classList.add("btn-selected");
+function handleRadioClick(isCalibrated) {
+  if (isCalibrated.value == "True") {
+    document.getElementById("calibrated_table_container").style.display =
+      "block";
+    document.getElementById("noncalibrated_table_container").style.display =
+      "none";
+  } else {
+    document.getElementById("calibrated_table_container").style.display =
+      "none";
+    document.getElementById("noncalibrated_table_container").style.display =
+      "block";
+  }
 }
 
 // Log user out after 5 minutes of inactivity
 let inactivityTimer;
 
 function startInactivityTimer() {
-  inactivityTimer = setTimeout(logoutAfterInactivity, 5 * 60 * 1000); // Set duration here
+  inactivityTimer = setTimeout(logoutAfterInactivity, 15 * 60 * 1000); // Set duration here
 }
 function resetInactivityTimer() {
   clearTimeout(inactivityTimer);
@@ -422,3 +340,27 @@ window.addEventListener("keydown", resetInactivityTimer);
 
 // Start the timer when the page loads
 startInactivityTimer();
+
+// Function to update under each device's return button timer on user home page.
+function updateTimer(deviceId, checkoutTime) {
+  var timerElement = document.getElementById("timer_" + deviceId);
+
+  function update() {
+    var currentTime = new Date().getTime();
+    var checkoutTimestamp = new Date(checkoutTime).getTime();
+    var timeDiffInSeconds = Math.floor(
+      (currentTime - checkoutTimestamp) / 1000
+    );
+    var days = Math.floor(timeDiffInSeconds / (24 * 60 * 60));
+    var hours = Math.floor((timeDiffInSeconds % (24 * 60 * 60)) / (60 * 60));
+    var minutes = Math.floor((timeDiffInSeconds % (60 * 60)) / 60);
+
+    timerElement.textContent = days + "d " + hours + "h " + minutes + "m ";
+  }
+
+  // Initial update
+  update();
+
+  // Set an interval to update the timer every minute (60,000 milliseconds)
+  setInterval(update, 60000);
+}

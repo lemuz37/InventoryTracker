@@ -30,4 +30,3 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(150), unique=True)
     user_name = db.Column(db.String(150))
     password = db.Column(db.String(150))
-    last_activity = db.Column(db.DateTime(timezone=True))

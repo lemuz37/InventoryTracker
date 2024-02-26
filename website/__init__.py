@@ -32,22 +32,37 @@ def create_app():
     if not os.path.exists(log_folder):
         os.mkdir(log_folder)
 
-    # Configure the logging system and mark the beginning of the log file
-    log_file = os.path.join(log_folder, "Inventory_Tracking_Tool.log")
-    logging.basicConfig(
-        filename=log_file,
-        encoding='utf-8',
-        level=logging.INFO,
-        format='%(asctime)s %(levelname)-8s %(name)-15s %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
+    # Configure the logging system for Werkzeug logs
+    werkzeug_log_file = os.path.join(log_folder, "Werkzeug.log")
+    werkzeug_logger = logging.getLogger('werkzeug')
+    werkzeug_logger.setLevel(logging.INFO)
 
-    # Suppress Werkzeug's logs by adjusting its logging level
-    # werkzeug_logger = logging.getLogger('werkzeug')
-    # werkzeug_logger.setLevel(logging.ERROR)
+    werkzeug_file_handler = logging.FileHandler(werkzeug_log_file)
+    werkzeug_file_handler.setLevel(logging.INFO)
 
-    # Log your custom message
-    logging.info("----- Midmark Inventory Tracking System -----\n\n")
+    werkzeug_formatter = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(message)s')
+    werkzeug_file_handler.setFormatter(werkzeug_formatter)
+
+    werkzeug_logger.addHandler(werkzeug_file_handler)
+
+    # Configure the logging system for custom logs
+    custom_log_file = os.path.join(log_folder, "Inventory_tracking.log")
+    custom_logger = logging.getLogger('custom')
+    custom_logger.setLevel(logging.INFO)
+
+    custom_file_handler = logging.FileHandler(custom_log_file)
+    custom_file_handler.setLevel(logging.INFO)
+
+    custom_formatter = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(message)s')
+    custom_file_handler.setFormatter(custom_formatter)
+
+    custom_logger.addHandler(custom_file_handler)
+
+    # Log a custom message
+    custom_logger.info(
+        "----- Midmark Inventory Tracking System -----\n\n")
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
     login_manager.init_app(app)

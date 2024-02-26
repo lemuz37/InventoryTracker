@@ -66,18 +66,6 @@
   color: white;
 }
 
-/* Device Table Styles */
-#device_table tbody tr {
-  height: 20px;
-}
-
-#device_table tbody td {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
 /* Alert Styles */
 .alert {
   display: flex;
@@ -86,18 +74,17 @@
 }
 
 /* Table Styles */
-#cal_device_table tbody td {
+.table td {
+  vertical-align: middle; /* Center vertically */
+  text-align: center; /* Center horizontally */
   overflow: hidden;
   text-overflow: ellipsis; /* This will show '...' for overflowing text content */
   white-space: nowrap; /* This will prevent content from wrapping to the next line */
 }
-
-.table td {
+.table th {
   vertical-align: middle;
-  height: 10px;
-  overflow: hidden;
-  text-overflow: ellipsis; /* This will show '...' for overflowing text content */
-  white-space: nowrap; /* This will prevent content from wrapping to the next line */
+  height: auto;
+  text-align: center; /* Center horizontally */
 }
 
 /* Button Hover Styles */

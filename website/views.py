@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from sqlalchemy import true
 from .models import Devices, User
 from . import db
+import time
 import json
 import ast
 import qrcode
@@ -10,6 +11,8 @@ import io
 from datetime import datetime
 
 views = Blueprint('views', __name__)
+
+# Home Page
 
 
 @views.route('/', methods=['GET', 'POST'])
@@ -24,55 +27,82 @@ def home():
         # data = request.form
         # print(data)
         project_name = request.form.get('project_name')
+        current_user.project = project_name
         for device in user_checked_out_devices:
             device.project = project_name
-            current_user.project = project_name
         db.session.commit()
     return render_template("home.html", user=current_user, devices=user_checked_out_devices, today=today)
 
+# ECG Devices Page
 
-@views.route('/devices', methods=['GET', 'POST'])
+
+@views.route('/ecg_devices', methods=['GET'])
 @login_required
-def devices():
-    users = User.query.all()
+def ecg_devices():
+    ecg_devices = Devices.query.filter(Devices.device_category == "ECG").all()
     today = datetime.now()
-    devices = Devices.query.all()
-    device_category = None
-    btnradio = None
+    radio_btn = "True"
+    return render_template("device_templates/ecg_devices.html", user=current_user, devices=ecg_devices, today=today, btnradio=radio_btn)
 
-    if request.method == 'POST' and request.form.__contains__("device_category_selection"):
-        # For debugging POST requests
-        # data = request.form
-        # print(data)
 
-        if device_category == "Select Device Category":
-            flash('Please select a device category', category='error')
-        device_category = request.form.get("device_category")
-        btnradio = request.form.get("btnradio")
+@views.route('/vitals_devices', methods=['GET'])
+@login_required
+def vitals_devices():
+    vitals_devices = Devices.query.filter(
+        Devices.device_category == "Vitals").all()
+    today = datetime.now()
+    radio_btn = "True"
+    return render_template("device_templates/vitals_devices.html", user=current_user, devices=vitals_devices, today=today, btnradio=radio_btn)
 
-    elif request.method == 'POST' and list(request.form.to_dict().keys())[2].__contains__("device_id"):
-        keys = request.form.keys()
 
-        for key in keys:
-            if key.__contains__("device_category"):
-                device_category = request.form.get(key)
-            if key.__contains__("btnradio"):
-                btnradio = request.form.get(key)
-            if key.__contains__("device_id"):
-                device = Devices.query.get(request.form.get(key))
+@views.route('/spirometer_devices', methods=['GET'])
+@login_required
+def spirometer_devices():
+    spirometer_devices = Devices.query.filter(
+        Devices.device_category == "Spirometer").all()
+    today = datetime.now()
+    radio_btn = "True"
+    return render_template("device_templates/spirometer_devices.html", user=current_user, devices=spirometer_devices, today=today, btnradio=radio_btn)
 
-        if device.user_name != "Available":
-            flash('Device is not available', category="error")
-        else:
-            device.checkout_time = datetime.now()
-            device.user_name = current_user.user_name
-            device.team = current_user.team
-            device.project = current_user.project
-            db.session.commit()
-            flash("Device checked out!", category="success")
 
-    return render_template("devices.html", user=current_user, users=users, devices=devices, today=today,
-                           device_category=device_category, btnradio=btnradio)
+@views.route('/cal_syringe_devices', methods=['GET'])
+@login_required
+def cal_syringe_devices():
+    cal_syringe_devices = Devices.query.filter(
+        Devices.device_category == "Calibration Syringe").all()
+    today = datetime.now()
+    radio_btn = "True"
+    return render_template("device_templates/cal_syringe_devices.html", user=current_user, devices=cal_syringe_devices, today=today, btnradio=radio_btn)
+
+
+@views.route('/simulator_devices', methods=['GET'])
+@login_required
+def simulator_devices():
+    simulator_devices = Devices.query.filter(
+        Devices.device_category == "Simulator").all()
+    today = datetime.now()
+    radio_btn = "True"
+    return render_template("device_templates/simulator_devices.html", user=current_user, devices=simulator_devices, today=today, btnradio=radio_btn)
+
+
+@views.route('/scales_devices', methods=['GET'])
+@login_required
+def scales_devices():
+    scales_devices = Devices.query.filter(
+        Devices.device_category == "Scales").all()
+    today = datetime.now()
+    radio_btn = "True"
+    return render_template("device_templates/scales_devices.html", user=current_user, devices=scales_devices, today=today, btnradio=radio_btn)
+
+
+@views.route('/eng_tools', methods=['GET'])
+@login_required
+def egn_tools():
+    eng_tools = Devices.query.filter(
+        Devices.device_category == "Engineering Tools").all()
+    today = datetime.now()
+    radio_btn = "True"
+    return render_template("device_templates/eng_tools.html", user=current_user, devices=eng_tools, today=today, btnradio=radio_btn)
 
 
 @views.route('/users', methods=['GET', 'POST'])
@@ -351,6 +381,26 @@ def updateDevice():
 
 
 # Button Functions
+
+# Handle check out button click event
+@views.route('/checkout_device', methods=['POST'])
+def checkout_device():
+    deviceID = json.loads(request.data)
+    deviceID = deviceID['deviceID']
+    device = Devices.query.get(deviceID)
+
+    if device.user_name != "Available":
+        flash('Device is not available', category="error")
+    else:
+        device.checkout_time = datetime.now()
+        device.user_name = current_user.user_name
+        device.team = current_user.team
+        device.project = current_user.project
+        db.session.commit()
+        flash("Device checked out!", category="success")
+    return jsonify(success=True)
+
+
 @views.route('/return_device', methods=['POST'])
 def return_device():
     deviceID = json.loads(request.data)
