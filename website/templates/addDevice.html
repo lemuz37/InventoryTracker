@@ -3,66 +3,103 @@
 
 {% block content %}
 
-<div class="row">
-    <div class="col-4"></div>
-    <div class="col-4 text-center">
-        <br />
-        <h2 align="center">Add a Device</h2>
-        <br/>
-        <form method="POST">
-            <div class="form-group">
-                <select class="form-control" name="device_category" id="device_category">
-                    <option selected>Select Device Category</option>
-                    <option value="ECG">ECG</option>
-                    <option value="Vitals">Vitals</option>
-                    <option value="Spirometer">Spirometer</option>
-                    <option value="Calibration Syringe">Calibration Syringe</option>
-                    <option value="Simulator">Simulator</option>
-                    <option value="Scales">Scales</option>
-                    <option value="Engineering Tools">Engineering Tools</option>
-                </select>
-            </div>
-            <br/>
-            <div class="form-group">
-                <input type="text" class="form-control" name="device_name" id="device_name"
-                    placeholder="Device Name" aria-label="Device Name" />
-            </div>
-            <br/>
-            <div class="form-group">
-                <input type="text" class="form-control" name="model_number" id="model_number"
-                    placeholder="Model Number" aria-label="Model Number" />
-            </div>
-            <br/>
-            <div class="form-group">
-                <input type="text" class="form-control" name="serial_number" id="serial_number"
-                    placeholder="Serial Number" aria-label="Serial Number" />
-            </div>
-            <br/>
-            <div class="form-group">
-                <input type="text" class="form-control" name="location" id="location" placeholder="Location"
-                    aria-label="Location">
-            </div>
-            <br/>
-            <div class="form-group">
-                <input type="date" name="calStart" id="calStart" class="form-control"
-                    placeholder="Calibration Start Date" aria-label="Calibration Start Date" />
-            </div>
-            <br/>
-            <div class="form-group">
-                <input type="date" name="calEnd" id="calEnd" class="form-control" placeholder="Calibration End Date"
-                    aria-label="Calibration End Date" />
-            </div>
-            <br/>
+<div class="row" style="padding-top: 4%; padding-bottom: 8%;">
+    <div class="col">
 
-            <div class="form-group">
-                <button type="submit" class="btn btn-sm btn-custom btn-update">Add Device</button>
-                <br/>
-                <small id="emailHelp" class="form-text text-muted">To add a Non-Calibrated device, leave both date fields empty.</small>
-            </div>
     </div>
-    </form>
-    <div class="col-4"></div>
-</div>
-</div>
+
+    <div class="col-8">
+        <h3 class="text-center">Add a Device</h3>
+        </br>
+
+        <form method="POST">
+            <div class="row">
+                <div class="col">
+                    <label for="device_name" class="form-label">Device Name</label>
+                    <input type="text" class="form-control" name="device_name" id="device_name"
+                        placeholder="Device Name" aria-label="Device Name" />
+                </div>
+                <div class="col">
+                    <label for="device_category" class="form-label">Device Category</label>
+                    <select class="form-select" name="device_category" id="device_category">
+                        <option selected>Select Device Category</option>
+                        <option value="ECG">ECG</option>
+                        <option value="Vitals">Vitals</option>
+                        <option value="Spirometer">Spirometer</option>
+                        <option value="Calibration Syringe">Calibration Syringe</option>
+                        <option value="Simulator">Simulator</option>
+                        <option value="Scales">Scales</option>
+                        <option value="Engineering Tools">Engineering Tools</option>
+                    </select>
+                </div>
+            </div>
+            </br>
+
+            <div class="row">
+                <div class="col">
+                    <label for="model_number" class="form-label">Model Number</label>
+                    <input type="text" class="form-control" name="model_number" id="model_number"
+                        placeholder="Model Number (Optional)" aria-label="Model Number" />
+                </div>
+                <div class="col">
+                    <label class="form-label" for="serial_number">Serial Number</label>
+                    <input type="text" class="form-control" name="serial_number" id="serial_number"
+                        placeholder="Serial Number" aria-label="Serial Number" autocomplete="off" />
+                </div>
+            </div>
+            </br>
+
+            <div class="row">
+                <div class="col">
+                    <label class="form-label" for="device_owner">Owner</label>
+                    <select class="form-select" name="device_owner" id="device_owner">
+                      <option selected>Select Team</option>
+                      <option value="Automation">Automation</option>
+                      <option value="Hardware">Hardware</option>
+                      <option value="Software">Software</option>
+                      <option value="System Test">System Test</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <label for="location" class="form-label">Location</label>
+                    <input type="text" class="form-control" name="location" id="location"
+                        placeholder="Location (Optional)" aria-label="Location">
+                </div>
+            </div>
+            </br>
+
+            <div class="row">
+                <div class="col">
+                    <label for="cal_start" class="form-label">Calibration Start Date</label>
+                    <input type="date" name="cal_start" id="cal_start" class="form-control"
+                        placeholder="Calibration Start Date" aria-label="Calibration Start Date" />
+                </div>
+                <div class="col">
+                    <label for="cal_end" class="form-label">Calibration End Date</label>
+                    <input type="date" name="cal_end" id="cal_end" class="form-control"
+                        placeholder="Calibration End Date" aria-label="Calibration End Date" />
+                </div>
+                <br />
+                <small id="emailHelp" class="form-text text-muted text-center">To add a Non-Calibrated device, leave both date
+                    fields empty.</small>
+            </div>
+            </br>
+
+            <div class="row" style="padding-top: 15px;">
+                <div class="col text-center">
+                    <button type="submit" class="btn btn-primary"
+                        style="width: 200px; height: 50px; padding: 10px 20px; font-size: 16px; text-align: center; line-height: 30px;">
+                        Submit
+                    </button>
+
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="col">
+
+    </div>
+
 </div>
 {% endblock %}

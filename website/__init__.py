@@ -1,6 +1,8 @@
+from datetime import datetime
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_apscheduler import APScheduler
 import os
 import logging
 
@@ -9,6 +11,9 @@ SCRIPTS_FOLDER_PATH = os.path.dirname(os.path.realpath(__file__))
 db = SQLAlchemy()
 DB_NAME = "database.db"
 
+class Config:
+    SCHEDULER_API_ENABLED = True
+
 
 def create_app():
     app = Flask(__name__)
@@ -16,13 +21,18 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
     db.init_app(app)
 
+    # Initialize APScheduler
+    app.config.from_object(Config())
+    scheduler = APScheduler()
+    scheduler.init_app(app)
+
     from .views import views
     from .auth import auth
 
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
 
-    from .models import User, Devices
+    from .models import User, Reservation
 
     with app.app_context():
         db.create_all()
@@ -70,5 +80,28 @@ def create_app():
     @login_manager.user_loader
     def load_user(id):
         return User.query.get(int(id))
+
+    def update_database():
+        with app.app_context():
+            try:
+                current_time = datetime.now()
+                # Query the Reservation table for expired reservations
+                expired_reservations = Reservation.query.filter(
+                    Reservation.end_time < current_time
+                ).all()
+
+                for reservation in expired_reservations:
+                    db.session.delete(reservation)
+
+                db.session.commit()
+            except Exception as e:
+                custom_logger.error(f'Failed to update reservations: {e}')
+
+
+    with app.app_context():
+        db.create_all()
+        if not scheduler.get_job('your_job_id'):
+            scheduler.add_job(id='your_job_id', func=update_database, trigger='interval', seconds=30)
+        scheduler.start()
 
     return app

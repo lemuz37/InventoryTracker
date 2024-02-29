@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file
 from flask_login import login_required, current_user
 from sqlalchemy import true
-from .models import Devices, User
+from .models import Device, User, Reservation
 from . import db
 import time
 import json
@@ -12,20 +12,13 @@ from datetime import datetime
 
 views = Blueprint('views', __name__)
 
-# Home Page
-
-
 @views.route('/', methods=['GET', 'POST'])
 @login_required
 def home():
-    user_checked_out_devices = Devices.query.filter(
-        Devices.user_name.contains(current_user.user_name))
+    user_checked_out_devices = current_user.devices
     today = datetime.now()
 
     if request.method == 'POST' and request.form.__contains__("project_name_btn"):
-        # For debugging POST requests
-        # data = request.form
-        # print(data)
         project_name = request.form.get('project_name')
         current_user.project = project_name
         for device in user_checked_out_devices:
@@ -33,63 +26,142 @@ def home():
         db.session.commit()
     return render_template("home.html", user=current_user, devices=user_checked_out_devices, today=today)
 
-# ECG Devices Page
+# Check out device with qr code
+@views.route('/assign_device_w_qr_code', methods=['POST'])
+def assign_device_w_qr_code():
+    def is_valid_dict_string(s):
+        """Check if string is a valid Python dict string."""
+        try:
+            d = ast.literal_eval(s)
+            if isinstance(d, dict):
+                return True
+        except (ValueError, SyntaxError):
+            return False
+        return False
 
+    def string_to_dict(s):
+        """Convert string to dict and check for required keys."""
+        if is_valid_dict_string(s):
+            d = ast.literal_eval(s)
+            required_keys = ["device_id", "device_category", "device_sn"]
+            if all(key in d for key in required_keys):
+                return d
+        return None
+
+    user_id = request.form.get('user_id')
+    scan_data = request.form.get('scan_data')
+
+    user = User.query.get(user_id)
+    scan_data = string_to_dict(scan_data)
+
+    if not scan_data:
+        flash('Invalid input!', category='error')
+    else:
+        device = Device.query.get(scan_data.get("device_id"))
+
+        # In case device gets deleted after qr_code creation
+        if not device:
+            flash("Device does not exist in database.", category="error")
+            return jsonify({})
+
+        device.checkout_time = datetime.now()
+        device.user_id = user.id
+        device.project = user.project
+        device.checked_out = True
+        db.session.commit()
+        flash('Device assigned!', category='success')
+
+    return redirect(request.referrer)
+
+# Update device project from user home page
+@views.route('/update_device_project', methods=['POST'])
+def update_device_project():
+    device_id = request.form.get('device_id')
+    project = request.form.get("project_" + str(device_id))
+
+    device = Device.query.get(device_id)
+
+    if device is None:
+        flash("Device not found!", category="error")
+        return redirect(request.referrer)
+
+    if not project:
+        return redirect(request.referrer)
+    
+    device.project = project
+    db.session.commit()
+    flash("Device project updated!", category="success")
+    return redirect(request.referrer)
+
+# Update device location from user home page
+@views.route('/update_device_location', methods=['POST'])
+def update_device_location():
+    device_id = request.form.get('device_id')
+    location = request.form.get("location_" + str(device_id))
+
+    device = Device.query.get(device_id)
+
+    if device is None:
+        flash("Device not found!", category="error")
+        return redirect(request.referrer)
+
+    if not location:
+        return redirect(request.referrer)
+    
+    device.location = location
+    db.session.commit()
+    flash("Device project updated!", category="success")
+    return redirect(request.referrer)
 
 @views.route('/ecg_devices', methods=['GET'])
 @login_required
 def ecg_devices():
-    ecg_devices = Devices.query.filter(Devices.device_category == "ECG").all()
+    ecg_devices = Device.query.filter(Device.device_category == "ECG").all()
     today = datetime.now()
-    radio_btn = "True"
-    return render_template("device_templates/ecg_devices.html", user=current_user, devices=ecg_devices, today=today, btnradio=radio_btn)
+    return render_template("device_templates/ecg_devices.html", user=current_user, devices=ecg_devices, today=today)
 
 
-@views.route('/vitals_devices', methods=['GET'])
+@views.route('/vital_devices', methods=['GET'])
 @login_required
 def vitals_devices():
-    vitals_devices = Devices.query.filter(
-        Devices.device_category == "Vitals").all()
+    vitals_devices = Device.query.filter(
+        Device.device_category == "Vitals").all()
     today = datetime.now()
-    radio_btn = "True"
-    return render_template("device_templates/vitals_devices.html", user=current_user, devices=vitals_devices, today=today, btnradio=radio_btn)
+    return render_template("device_templates/vitals_devices.html", user=current_user, devices=vitals_devices, today=today)
 
 
 @views.route('/spirometer_devices', methods=['GET'])
 @login_required
 def spirometer_devices():
-    spirometer_devices = Devices.query.filter(
-        Devices.device_category == "Spirometer").all()
+    spirometer_devices = Device.query.filter(
+        Device.device_category == "Spirometer").all()
     today = datetime.now()
-    radio_btn = "True"
-    return render_template("device_templates/spirometer_devices.html", user=current_user, devices=spirometer_devices, today=today, btnradio=radio_btn)
+    return render_template("device_templates/spirometer_devices.html", user=current_user, devices=spirometer_devices, today=today)
 
 
-@views.route('/cal_syringe_devices', methods=['GET'])
+@views.route('/calibration_syringes', methods=['GET'])
 @login_required
 def cal_syringe_devices():
-    cal_syringe_devices = Devices.query.filter(
-        Devices.device_category == "Calibration Syringe").all()
+    calibration_syringes = Device.query.filter(
+        Device.device_category == "Calibration Syringe").all()
     today = datetime.now()
-    radio_btn = "True"
-    return render_template("device_templates/cal_syringe_devices.html", user=current_user, devices=cal_syringe_devices, today=today, btnradio=radio_btn)
+    return render_template("device_templates/calibration_syringes.html", user=current_user, devices=calibration_syringes, today=today)
 
 
 @views.route('/simulator_devices', methods=['GET'])
 @login_required
 def simulator_devices():
-    simulator_devices = Devices.query.filter(
-        Devices.device_category == "Simulator").all()
+    simulator_devices = Device.query.filter(
+        Device.device_category == "Simulator").all()
     today = datetime.now()
-    radio_btn = "True"
-    return render_template("device_templates/simulator_devices.html", user=current_user, devices=simulator_devices, today=today, btnradio=radio_btn)
+    return render_template("device_templates/simulator_devices.html", user=current_user, devices=simulator_devices, today=today)
 
 
-@views.route('/scales_devices', methods=['GET'])
+@views.route('/scale_devices', methods=['GET'])
 @login_required
 def scales_devices():
-    scales_devices = Devices.query.filter(
-        Devices.device_category == "Scales").all()
+    scales_devices = Device.query.filter(
+        Device.device_category == "Scales").all()
     today = datetime.now()
     radio_btn = "True"
     return render_template("device_templates/scales_devices.html", user=current_user, devices=scales_devices, today=today, btnradio=radio_btn)
@@ -98,110 +170,21 @@ def scales_devices():
 @views.route('/eng_tools', methods=['GET'])
 @login_required
 def egn_tools():
-    eng_tools = Devices.query.filter(
-        Devices.device_category == "Engineering Tools").all()
+    eng_tools = Device.query.filter(
+        Device.device_category == "Engineering Tools").all()
     today = datetime.now()
-    radio_btn = "True"
-    return render_template("device_templates/eng_tools.html", user=current_user, devices=eng_tools, today=today, btnradio=radio_btn)
-
-
-@views.route('/users', methods=['GET', 'POST'])
-@login_required
-def users():
-    devices = Devices.query.all()
-    users = User.query.all()
-    if request.method == 'POST':
-        pass
-    return render_template("users.html", user=current_user, devices=devices, users=users)
-
-
-@views.route('/add_device', methods=['GET', 'POST'])
-@login_required
-def addDevice():
-    def duplicate_check():
-        deviceQuery = Devices.query.filter_by(
-            device_category=device_category, serial_number=serial_number).first()
-        if deviceQuery:
-            return true
-
-    device_table = Devices.query.all()
-    user_table = User.query.all()
-    today = datetime.now()
-
-    if request.method == 'POST':
-        # For debugging POST requests
-        # data = request.form
-        # print(data)
-
-        device_category = request.form.get('device_category')
-        device_name = request.form.get('device_name')
-        model_number = request.form.get('model_number')
-        serial_number = request.form.get('serial_number')
-        location = request.form.get('location')
-        calStart = request.form.get('calStart')
-        calEnd = request.form.get('calEnd')
-
-        if not calStart and not calEnd:
-            calStart = str(datetime.min)[:-9]
-            calEnd = str(datetime.min)[:-9]
-            calibrated = False
-        else:
-            calibrated = True
-
-        if device_category == "Select Device Category":
-            flash('Please select a device category', category='error')
-            return render_template("addDevice.html", user=current_user, devices=device_table, users=user_table, today=today)
-        if not device_name:
-            flash('Please enter a device name', category='error')
-            return render_template("addDevice.html", user=current_user, devices=device_table, users=user_table, today=today)
-        if not model_number:
-            model_number = ""
-        if not serial_number:
-            flash('Serial Number not entered', category='error')
-            return render_template("addDevice.html", user=current_user, devices=device_table, users=user_table, today=today)
-        if not location:
-            flash('Location not entered', category='error')
-            return render_template("addDevice.html", user=current_user, devices=device_table, users=user_table, today=today)
-        elif location.lower().__contains__("home"):
-            flash("Cannot take device home.", category='error')
-            return render_template("addDevice.html", user=current_user, devices=device_table, users=user_table, today=today)
-        if not calStart:
-            flash('Calibration Start Date not entered', category='error')
-            return render_template("addDevice.html", user=current_user, devices=device_table, users=user_table, today=today)
-        elif not calEnd:
-            flash('Calibration End Date not entered', category='error')
-            return render_template("addDevice.html", user=current_user, devices=device_table, users=user_table, today=today)
-        if duplicate_check():
-            flash('Device already exists in db', category='error')
-            return render_template("addDevice.html", user=current_user, devices=device_table, users=user_table, today=today)
-        if calStart > calEnd:
-            flash("End Date must be later than Start Date", category='error')
-            return render_template("addDevice.html", user=current_user, devices=device_table, users=user_table, today=today)
-
-        calStart = datetime.strptime(calStart, "%Y-%m-%d")
-        calEnd = datetime.strptime(calEnd, "%Y-%m-%d")
-
-        new_device = Devices(device_category=device_category, device_name=device_name,
-                             model_number=model_number, serial_number=serial_number, team=current_user.team,
-                             project="No Project", location=location, calibrated=calibrated, calibrationStart=calStart,
-                             calibrationEnd=calEnd, user_name="Available")
-        db.session.add(new_device)
-        db.session.commit()
-        flash('Device added!', category='success')
-
-    return render_template("addDevice.html", user=current_user, devices=device_table, users=user_table, today=today)
-
+    return render_template("device_templates/eng_tools.html", user=current_user, devices=eng_tools, today=today)
 
 @views.route('/update_devices', methods=['GET', 'POST'])
 @login_required
 def updateDevice():
     def duplicate_check(serial_number):
-        deviceQuery = Devices.query.filter_by(device_category=device_category,
+        deviceQuery = Device.query.filter_by(device_category=device_category,
                                               serial_number=serial_number).first()
         if deviceQuery:
             return true
 
-    devices = Devices.query.all()
+    devices = Device.query.all()
     users = User.query.all()
     device_category = None
     btnradio = None
@@ -250,7 +233,7 @@ def updateDevice():
                 for i in range(0, len(data_list)):
                     device_id_str = data_list[i][0][0].split('_')[-1:]
                     device_id = int(device_id_str[0])
-                    device = Devices.query.get(device_id)
+                    device = Device.query.get(device_id)
                     for j in range(0, 8):
                         data = data_list[i][j]
                         # Device Category
@@ -329,7 +312,7 @@ def updateDevice():
                 for i in range(0, len(data_list)):
                     device_id_str = data_list[i][0][0].split('_')[-1:]
                     device_id = int(device_id_str[0])
-                    device = Devices.query.get(device_id)
+                    device = Device.query.get(device_id)
                     for j in range(0, 4):
                         data = data_list[i][j]
                         # calStart & calEnd
@@ -379,73 +362,193 @@ def updateDevice():
     return render_template("update_devices.html", user=current_user, devices=devices, users=users,
                            device_category=device_category, btnradio=btnradio)
 
+@views.route('/add_device', methods=['GET', 'POST'])
+@login_required
+def addDevice():
+    def duplicate_check():
+        deviceQuery = Device.query.filter_by(
+            device_category=device_category, serial_number=serial_number).first()
+        if deviceQuery:
+            return True
+        return False
 
-# Button Functions
+    device_table = Device.query.all()
+    user_table = User.query.all()
+    today = datetime.now()
+
+    if request.method == 'POST':
+
+        device_name = request.form.get('device_name')
+        device_category = request.form.get('device_category')
+        model_number = request.form.get('model_number')
+        serial_number = request.form.get('serial_number')
+        device_owner = request.form.get('device_owner')
+        location = request.form.get('location')
+        calStart = request.form.get('cal_start')
+        calEnd = request.form.get('cal_end')
+
+        if not device_name:
+            flash('Please enter a Device Name.', category='error')
+            return redirect(request.referrer)
+        if device_category == "Select Device Category":
+            flash('Please select a Device Category.', category='error')
+            return redirect(request.referrer)
+
+        if not serial_number:
+            flash('Please enter device Serial Number.', category='error')
+            return redirect(request.referrer)
+    
+        if device_owner == "Select Team":
+            flash('Please select an Owner.', category='error')
+            return redirect(request.referrer)
+
+        if location.lower().__contains__("home"):
+            flash("Cannot take device home.", category='error')
+            return redirect(request.referrer)
+        
+        if not calStart and not calEnd:
+            calStart = str(datetime.min)[:-9]
+            calEnd = str(datetime.min)[:-9]
+            is_calibrated = False
+        else:
+            if not calStart:
+                flash('Calibration Start Date not entered', category='error')
+                return redirect(request.referrer)
+            elif not calEnd:
+                flash('Calibration End Date not entered', category='error')
+                return redirect(request.referrer)
+            if calStart > calEnd:
+                flash("End Date must be later than Start Date", category='error')
+                return redirect(request.referrer)
+            is_calibrated = True
+        
+        if duplicate_check():
+            flash('Device already exists in db', category='error')
+            return redirect(request.referrer)
+
+        calStart = datetime.strptime(calStart, "%Y-%m-%d")
+        calEnd = datetime.strptime(calEnd, "%Y-%m-%d")
+
+        new_device = Device(device_category=device_category, device_name=device_name,
+                             model_number=model_number, serial_number=serial_number, owner=device_owner,
+                             project="No Project", location=location, is_calibrated=is_calibrated, calibration_start=calStart,
+                             calibration_end=calEnd)
+        db.session.add(new_device)
+        db.session.commit()
+        flash('Device added!', category='success')
+
+    return render_template("addDevice.html", user=current_user, devices=device_table, users=user_table, today=today)
+
+@views.route('/users', methods=['GET', 'POST'])
+@login_required
+def users():
+    devices = Device.query.all()
+    users = User.query.all()
+    if request.method == 'POST':
+        pass
+    return render_template("users.html", user=current_user, devices=devices, users=users)
+
+# ==============================================================================#
+#                               Button Functions                                #
+# ==============================================================================#
+
 
 # Handle check out button click event
 @views.route('/checkout_device', methods=['POST'])
 def checkout_device():
-    deviceID = json.loads(request.data)
-    deviceID = deviceID['deviceID']
-    device = Devices.query.get(deviceID)
+    # For debugging POST requests
+    # data = request.form
+    # print(data)
+    device_id = request.form.get('device_id')
+    device = Device.query.get(device_id)
+    now = datetime.now()
 
-    if device.user_name != "Available":
+    if device.checked_out:
         flash('Device is not available', category="error")
-    else:
-        device.checkout_time = datetime.now()
-        device.user_name = current_user.user_name
-        device.team = current_user.team
-        device.project = current_user.project
-        db.session.commit()
-        flash("Device checked out!", category="success")
-    return jsonify(success=True)
+        return redirect(request.referrer)
+    
+    if device.reservation and device.reservation.start_time < now and now < device.reservation.end_time:
+        if current_user.team == device.reservation.user.team:
+            device.checkout_time = now
+            device.user_id = current_user.id
+            device.project = current_user.project
+            device.checked_out = True
+            db.session.commit()
+            flash("Device checked out!", category="success")
+            return redirect(request.referrer)
 
+        flash("The device " + device.device_name + " is currently reserved by " + device.reservation.user.team +" team. Please try checking it out at a later time, or check other available devices.", category="error")
+        return redirect(request.referrer)
+    
+    device.checkout_time = now
+    device.user_id = current_user.id
+    device.project = current_user.project
+    device.checked_out = True
+    db.session.commit()
+    flash("Device checked out!", category="success")
+    return redirect(request.referrer)
 
 @views.route('/return_device', methods=['POST'])
 def return_device():
-    deviceID = json.loads(request.data)
-    deviceID = deviceID['deviceID']
-    device = Devices.query.get(deviceID)
-    device.user_name = "Available"
-    device.team = "System Test"
+    device_id = request.form.get('device_id')
+    device = Device.query.get(device_id)
+
+    if device is None:
+        flash("Device not found!", category="error")
+        return redirect(request.referrer)
+
+    device.user_id = None
     device.project = "No Project"
+    device.checked_out = False
+    device.checkout_time = None
     db.session.commit()
     flash("Device returned!", category="success")
-    return jsonify(success=True)
+    return redirect(request.referrer)
 
+@views.route('/reserve_device', methods=['POST'])
+def reserve_device():
+    # For debugging POST requests
+    # data = request.form
+    # print(data)
+    device_id = request.form.get('device_id')
+    reservation_start = datetime.strptime(request.form.get('reservation_start_date'), "%Y-%m-%d")
+    reservation_end = datetime.strptime(request.form.get('reservation_end_date'), "%Y-%m-%d")
+    project = request.form.get('project')
 
-@views.route('/update_device_project', methods=['POST'])
-def update_device_project():
-    form_data = request.form
-    deviceID = form_data['deviceID']
-    project = form_data['project']
-    device = Devices.query.get(deviceID)
-    if not project:
-        return jsonify(success=True)
-    else:
-        device.project = project
+    device = Device.query.get(device_id)
+
+    if device is None:
+        flash("Device not found!", category="error")
+        return redirect(request.referrer)
+
+    if reservation_end < reservation_start:
+            flash('Error: The end date cannot be earlier than the start date.', category="error")
+            return redirect(request.referrer)
+    
+    if device.reservation:
+        flash('Device is not available for reservation.', category="error")
+        return redirect(request.referrer)
+    
+    new_reservation = Reservation(
+        start_time=reservation_start,
+        end_time=reservation_end,
+        user_id=current_user.id,
+        device_id=device.id,
+        project=project
+    )
+    db.session.add(new_reservation)
+    
+    if project:
         db.session.commit()
-        flash("Device project updated!", category="success")
-    return jsonify(success=True)
+        flash("Device reserved for project " + project, category="success")
+        return redirect(request.referrer)
 
+    db.session.commit()
+    flash("Device reserved!", category="success")
+    return redirect(request.referrer)
 
-@views.route('/update_device_location', methods=['POST'])
-def update_device_location():
-    form_data = request.form
-    deviceID = form_data['deviceID']
-    location = form_data['location']
-    device = Devices.query.get(deviceID)
-    if not location:
-        return jsonify(success=True)
-    else:
-        device.location = location
-        db.session.commit()
-        flash("Device location updated!", category="success")
-    return jsonify(success=True)
-
-
-@views.route('/generate_qrcode', methods=['POST'])
-def generate_qrcode():
+@views.route('/generate_qr_code', methods=['POST'])
+def generate_qr_code():
 
     data = {
         "device_id": None,
@@ -453,9 +556,8 @@ def generate_qrcode():
         "device_sn": None
     }
 
-    deviceID = json.loads(request.data)
-    deviceID = deviceID['deviceID']
-    device = Devices.query.get(deviceID)
+    device_id = request.form.get('device_id')
+    device = Device.query.get(device_id)
 
     data['device_id'] = device.id
     data['device_category'] = device.device_category
@@ -476,8 +578,8 @@ def generate_qrcode():
                      mimetype='image/png')
 
 
-@views.route('/generate_user_qrcode', methods=['POST'])
-def generate_user_qrcode():
+@views.route('/generate_user_qr_code', methods=['POST'])
+def generate_user_qr_code():
 
     data = {
         "user_id": None,
@@ -485,9 +587,8 @@ def generate_user_qrcode():
         "user_pw": None
     }
 
-    userID = json.loads(request.data)
-    userID = userID['userID']
-    user = User.query.get(userID)
+    user_id = request.form.get('user_id')
+    user = User.query.get(int(user_id))
 
     data['user_id'] = user.id
     data['user_email'] = user.email
@@ -510,154 +611,96 @@ def generate_user_qrcode():
 
 @views.route('/delete_device', methods=['POST'])
 def delete_device():
-    deviceID = json.loads(request.data)
-    deviceID = deviceID['deviceID']
-    device = Devices.query.get(deviceID)
+    device_id = request.form.get('device_id')
+    device = Device.query.get(device_id)
     db.session.delete(device)
     db.session.commit()
-    return jsonify({})
+    flash('Another one bites the dust.', category="success")
+    return redirect(request.referrer)
 
 
 @views.route('/delete_user', methods=['POST'])
 def delete_user():
-    userID = json.loads(request.data)
-    userID = userID['userID']
-    if userID == current_user.id:
+    user_id = request.form.get('user_id')
+    if int(user_id) == current_user.id:
         flash("You cannot delete yourself.", category="error")
-        return jsonify({})
+        return redirect(request.referrer)
 
-    user = User.query.get(userID)
-    user_checked_out_devices = Devices.query.filter(
-        Devices.user_name.contains(user.user_name))
-    for device in user_checked_out_devices:
-        device.user_name = "Available"
-        device.team = "System Test"
-        device.project = "No Project"
+    user = User.query.get(int(user_id))
+    if user.devices:
+        for device in user.devices:
+            device.user_id = None
+            device.project = "No Project"
+            device.checked_out = False
+            device.checkout_time = None
     db.session.delete(user)
     db.session.commit()
-    return jsonify({})
-
+    flash('Another one bites the dust.', category="success")
+    return redirect(request.referrer)
 
 @views.route('/assign_device', methods=['POST'])
 def user_assign_device():
-    data = json.loads(request.data)
-    userID = data.get("userId")
-    device_category = data.get("deviceCategory")
-    serial_number = data.get("serialNumber")
-    user = User.query.filter_by(id=int(userID)).first()
+    user_id = request.form.get('user_id')
+    device_category = request.form.get('device_category_' + user_id)
+    serial_number = request.form.get("serial_number_" + user_id)
+    user = User.query.filter_by(id=int(user_id)).first()
 
-    device = Devices.query.filter_by(device_category=device_category,
+    device = Device.query.filter_by(device_category=device_category,
                                      serial_number=serial_number).first()
 
     if not device:
         flash("Device does not exist in database.", category="error")
-        return jsonify({})
-    elif device.user_name != "Available":
+        return redirect(request.referrer)
+    elif device.checked_out or device.reservation:
         flash("Device is not available.", category="error")
-        return jsonify({})
+        return redirect(request.referrer)
     else:
+        device.user_id = user.id
+        device.project = user.project
+        device.checked_out = True
         device.checkout_time = datetime.now()
-        device.user_name = user.user_name
         db.session.commit()
         flash('Device assigned!', category='success')
-    return jsonify({})
+    return redirect(request.referrer)
 
+@views.route('/edit_user', methods=['POST'])
+def edit_user():
+    user_id = request.form.get('user_id')
+    user = User.query.get(int(user_id))
 
-@views.route('/editUser', methods=['POST'])
-def editUser():
-    data = json.loads(request.data)
-    userID = data.get("userId")
-    user_name = data.get("user_name")
-    project = data.get("project")
-    email = data.get("email").lower()
-    team = data.get("team")
-    admin = data.get("admin")
+    first_name = request.form.get("first_name_" + user_id).lower()
+    last_name = request.form.get("last_name_" + user_id).lower()
+    project = request.form.get("project_" + user_id)
+    team = request.form.get("team")
+    admin = request.form.get("admin_" + user_id)
 
-    user = User.query.filter_by(email=email).first()
-    if user:
-        flash('Email already exists', category='error')
-        return jsonify({})
-
+    if not first_name and not last_name:
+        pass
     else:
-        user = User.query.filter_by(id=int(userID)).first()
-        user_checked_out_devices = Devices.query.filter(
-            Devices.user_name.contains(user.user_name))
-        if not user_name:
-            pass
-        else:
-            user.user_name = user_name
-            for device in user_checked_out_devices:
-                device.user_name = user_name
-        if not project:
-            pass
-        else:
-            user.project = project
-            for device in user_checked_out_devices:
-                device.project = project
-        if not email:
-            pass
-        else:
-            user.email = email
-        if team == "Select Team":
-            pass
-        else:
-            user.team = team
-            for device in user_checked_out_devices:
-                device.team = team
-        if admin:
-            user.admin = admin
-        else:
-            user.admin = admin
-            if userID == current_user.id:
-                db.session.commit()
-                flash('User edited!', category='success')
-                return redirect(url_for('auth.logout'))
-
-        db.session.commit()
-        flash('User edited!', category='success')
-    return jsonify({})
-
-
-@views.route('/assign_device_w_qr_code', methods=['POST'])
-def assign_device_w_qr_code():
-    def is_valid_dict_string(s):
-        """Check if string is a valid Python dict string."""
-        try:
-            d = ast.literal_eval(s)
-            if isinstance(d, dict):
-                return True
-        except (ValueError, SyntaxError):
-            return False
-        return False
-
-    def string_to_dict(s):
-        """Convert string to dict and check for required keys."""
-        if is_valid_dict_string(s):
-            d = ast.literal_eval(s)
-            required_keys = ["device_id", "device_category", "device_sn"]
-            if all(key in d for key in required_keys):
-                return d
-        return None
-
-    data_dict = request.form.to_dict()
-    user = User.query.filter_by(id=int(data_dict.get("userId"))).first()
-
-    scan_data = string_to_dict(data_dict.get("scan_data"))
-
-    if not scan_data:
-        flash('Invalid input!', category='error')
+        if first_name:
+            user.first_name = first_name.title()
+        if last_name:
+            user.last_name = last_name.title()
+        user.user_name = first_name.title()[0] + last_name.title()
+    if not project:
+        pass
     else:
-        device = Devices.query.filter_by(
-            id=int(scan_data.get("device_id"))).first()
+        user.project = project
 
-        # In case device gets deleted after qr_code creation
-        if not device:
-            flash("Device does not exist in database.", category="error")
-            return jsonify({})
+    if team == "Select Team":
+        pass
+    else:
+        user.team = team
 
-        device.checkout_time = datetime.now()
-        device.user_name = user.user_name
-        db.session.commit()
-        flash('Device assigned!', category='success')
+    if admin == "on":
+        user.admin = True
+    else:
+        user.admin = False
+        if int(user_id) == current_user.id:
+            db.session.commit()
+            flash('User edited!', category='success')
+            return redirect(url_for('auth.logout'))
 
-    return redirect(url_for('views.home'))
+    db.session.commit()
+    flash('User edited!', category='success')
+    return redirect(request.referrer)

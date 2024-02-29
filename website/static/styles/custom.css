@@ -1,0 +1,38 @@
+/* Table Styles */
+.table td {
+    vertical-align: middle; /* Center vertically */
+    text-align: center; /* Center horizontally */
+    overflow: visible;
+    text-overflow: ellipsis; /* Shows '...' for overflowing text content */
+    white-space: nowrap; /* Prevents content from wrapping to the next line */
+  }
+  .table th {
+    vertical-align: middle;
+    height: auto;
+    text-align: center; /* Center horizontally */
+  }
+  .no-border {
+    border: none !important;
+  }
+
+ /*Table Legends*/
+ .legend {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    margin-right: 20px; /* Spacing between legend items */
+  }
+  
+  .color-box {
+    display: inline-block;
+    width: 20px; /* Size of color box */
+    height: 20px;
+    margin-right: 5px; /* Spacing between color boxes */
+    border: 1px solid #000;
+  }
