@@ -287,11 +287,11 @@ def updateDevice():
                                 return render_template("update_devices.html", user=current_user, devices=devices, users=users,
                                                        device_category=device_category, btnradio=btnradio)
                             else:
-                                device.calibrationStart = datetime.strptime(
+                                device.calibration_start = datetime.strptime(
                                     data[1], "%Y-%m-%d")
-                                device.calibrationEnd = datetime.strptime(
+                                device.calibration_end = datetime.strptime(
                                     data_list[i][j + 1][1], "%Y-%m-%d")
-                                device.calibrated = True
+                                device.is_calibrated = True
                         # Project
                         if j == 6:
                             if not data[1]:
@@ -335,11 +335,11 @@ def updateDevice():
                                 return render_template("update_devices.html", user=current_user, devices=devices, users=users,
                                                        device_category=device_category, btnradio=btnradio)
                             else:
-                                device.calibrationStart = datetime.strptime(
+                                device.calibration_start = datetime.strptime(
                                     data[1], "%Y-%m-%d")
-                                device.calibrationEnd = datetime.strptime(
+                                device.calibration_end = datetime.strptime(
                                     data_list[i][j + 1][1], "%Y-%m-%d")
-                                device.calibrated = True
+                                device.is_calibrated = True
                         # Project
                         if j == 2:
                             if not data[1]:
@@ -650,9 +650,6 @@ def user_assign_device():
 
     if not device:
         flash("Device does not exist in database.", category="error")
-        return redirect(request.referrer)
-    elif device.checked_out or device.reservation:
-        flash("Device is not available.", category="error")
         return redirect(request.referrer)
     else:
         device.user_id = user.id
