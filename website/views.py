@@ -120,192 +120,177 @@ def show_device_table(device_category):
     today = datetime.now()
     return render_template("devices.html", user=current_user, devices=devices, device_category=device_category, today=today)
 
-@views.route('/update_devices', methods=['GET', 'POST'])
+@views.route('/edit_devices/<device_category>', methods=['GET', 'POST'])
 @login_required
-def updateDevice():
+def edit_devices(device_category):
     def duplicate_check(serial_number):
         deviceQuery = Device.query.filter_by(device_category=device_category,
                                               serial_number=serial_number).first()
         if deviceQuery:
             return true
 
-    devices = Device.query.all()
-    users = User.query.all()
-    device_category = None
-    btnradio = None
+    devices = Device.query.filter(Device.device_category == device_category).all()
 
     if request.method == 'POST':
         # For debugging POST requests
         # data = request.form
         # print(data)
 
-        if request.form.__contains__("device_category_selection"):
-            device_category = request.form.get('device_category')
-            btnradio = request.form.get('btnradio')
+        data_dict = request.form.to_dict()
+        # Pop first element in  dictionary
+        (k := next(iter(data_dict)), data_dict.pop(k))
+        # Pop last element in dictionary
+        data_dict.popitem()[1]
+        device_category = data_dict.popitem()[1]
 
-            if device_category == "Select Device Category":
-                flash('Please select a device category', category='error')
-            return render_template("update_devices.html", user=current_user, devices=devices, users=users,
-                                   device_category=device_category, btnradio=btnradio)
+        if current_user.admin == True:
+            displayed_devices = int(len(data_dict)/8)
+        else:
+            displayed_devices = int(len(data_dict)/4)
 
-        elif request.form.__contains__("update_devices"):
-            data_dict = request.form.to_dict()
-            # Pop first element in  dictionary
-            (k := next(iter(data_dict)), data_dict.pop(k))
-            # Pop last element in dictionary
-            data_dict.popitem()[1]
-            device_category = data_dict.popitem()[1]
+        data_list = [0] * displayed_devices
 
+        count = 0
+        while displayed_devices > 0:
             if current_user.admin == True:
-                displayed_devices = int(len(data_dict)/8)
+                data_list[count] = list(data_dict.items())[
+                    (count) * 8: (count + 1) * 8]
             else:
-                displayed_devices = int(len(data_dict)/4)
+                data_list[count] = list(data_dict.items())[
+                    (count) * 4: (count + 1) * 4]
+            count = count + 1
+            displayed_devices = displayed_devices - 1
 
-            data_list = [0] * displayed_devices
+        if current_user.admin == True:
+            for i in range(0, len(data_list)):
+                device_id_str = data_list[i][0][0].split('_')[-1:]
+                device_id = int(device_id_str[0])
+                device = Device.query.get(device_id)
+                for j in range(0, 8):
+                    data = data_list[i][j]
+                    # Device Category
+                    if j == 0:
+                        if data[1] == "Select Device Category":
+                            continue
 
-            count = 0
-            while displayed_devices > 0:
-                if current_user.admin == True:
-                    data_list[count] = list(data_dict.items())[
-                        (count) * 8: (count + 1) * 8]
-                else:
-                    data_list[count] = list(data_dict.items())[
-                        (count) * 4: (count + 1) * 4]
-                count = count + 1
-                displayed_devices = displayed_devices - 1
+                        else:
+                            device.device_category = data[1]
+                    # Device Name
+                    if j == 1:
+                        if not data[1]:
+                            continue
+                        else:
+                            device.device_name = data[1]
+                    # Model Number
+                    if j == 2:
+                        if not data[1]:
+                            continue
+                        else:
+                            device.model_number = data[1]
+                    # Serial Number
+                    if j == 3:
+                        if not data[1]:
+                            continue
+                        else:
+                            if duplicate_check(data[1]):
+                                flash('Serial Number already exists in database.',
+                                        category='error')
+                                return redirect(request.referrer)
 
-            if current_user.admin == True:
-                for i in range(0, len(data_list)):
-                    device_id_str = data_list[i][0][0].split('_')[-1:]
-                    device_id = int(device_id_str[0])
-                    device = Device.query.get(device_id)
-                    for j in range(0, 8):
-                        data = data_list[i][j]
-                        # Device Category
-                        if j == 0:
-                            if data[1] == "Select Device Category":
-                                continue
+                            else:
+                                device.serial_number = data[1]
+                    # calStart and cal End
+                    if j == 4:
+                        if not data[1] and not data_list[i][j + 1][1]:
+                            continue
+                        elif data[1] and not data_list[i][j + 1][1]:
+                            flash('Calibration End Date not entered',
+                                    category='error')
+                            return redirect(request.referrer)
 
-                            else:
-                                device.device_category = data[1]
-                        # Device Name
-                        if j == 1:
-                            if not data[1]:
-                                continue
-                            else:
-                                device.device_name = data[1]
-                        # Model Number
-                        if j == 2:
-                            if not data[1]:
-                                continue
-                            else:
-                                device.model_number = data[1]
-                        # Serial Number
-                        if j == 3:
-                            if not data[1]:
-                                continue
-                            else:
-                                if duplicate_check(data[1]):
-                                    flash('Serial Number already exists in database.',
-                                          category='error')
-                                    return render_template("update_devices.html", user=current_user, devices=devices, users=users,
-                                                           device_category=device_category, btnradio=btnradio)
-                                else:
-                                    device.serial_number = data[1]
-                        # calStart and cal End
-                        if j == 4:
-                            if not data[1] and not data_list[i][j + 1][1]:
-                                continue
-                            elif data[1] and not data_list[i][j + 1][1]:
-                                flash('Calibration End Date not entered',
-                                      category='error')
-                                return render_template("update_devices.html", user=current_user, devices=devices, users=users,
-                                                       device_category=device_category, btnradio=btnradio)
-                            elif not data[1] and data_list[i][j + 1][1]:
-                                flash('Calibration Start Date not entered',
-                                      category='error')
-                                return render_template("update_devices.html", user=current_user, devices=devices, users=users,
-                                                       device_category=device_category, btnradio=btnradio)
-                            elif data[1] > data_list[i][j + 1][1]:
-                                flash("End Date must be later than Start Date",
-                                      category='error')
-                                return render_template("update_devices.html", user=current_user, devices=devices, users=users,
-                                                       device_category=device_category, btnradio=btnradio)
-                            else:
-                                device.calibration_start = datetime.strptime(
-                                    data[1], "%Y-%m-%d")
-                                device.calibration_end = datetime.strptime(
-                                    data_list[i][j + 1][1], "%Y-%m-%d")
-                                device.is_calibrated = True
-                        # Project
-                        if j == 6:
-                            if not data[1]:
-                                continue
-                            else:
-                                device.project = data[1]
-                        # Location
-                        if j == 7:
-                            if not data[1]:
-                                continue
-                            elif data[1].lower().__contains__("home"):
-                                flash("Cannot take device home.",
-                                      category='error')
-                            else:
-                                device.location = data[1]
+                        elif not data[1] and data_list[i][j + 1][1]:
+                            flash('Calibration Start Date not entered',
+                                    category='error')
+                            return redirect(request.referrer)
 
-            else:
-                for i in range(0, len(data_list)):
-                    device_id_str = data_list[i][0][0].split('_')[-1:]
-                    device_id = int(device_id_str[0])
-                    device = Device.query.get(device_id)
-                    for j in range(0, 4):
-                        data = data_list[i][j]
-                        # calStart & calEnd
-                        if j == 0:
-                            if not data[1] and not data_list[i][j + 1][1]:
-                                continue
-                            elif data[1] and not data_list[i][j + 1][1]:
-                                flash('Calibration End Date not entered',
-                                      category='error')
-                                return render_template("update_devices.html", user=current_user, devices=devices, users=users,
-                                                       device_category=device_category, btnradio=btnradio)
-                            elif not data[1] and data_list[i][j + 1][1]:
-                                flash('Calibration Start Date not entered',
-                                      category='error')
-                                return render_template("update_devices.html", user=current_user, devices=devices, users=users,
-                                                       device_category=device_category, btnradio=btnradio)
-                            elif data[1] > data_list[i][j + 1][1]:
-                                flash("End Date must be later than Start Date",
-                                      category='error')
-                                return render_template("update_devices.html", user=current_user, devices=devices, users=users,
-                                                       device_category=device_category, btnradio=btnradio)
-                            else:
-                                device.calibration_start = datetime.strptime(
-                                    data[1], "%Y-%m-%d")
-                                device.calibration_end = datetime.strptime(
-                                    data_list[i][j + 1][1], "%Y-%m-%d")
-                                device.is_calibrated = True
-                        # Project
-                        if j == 2:
-                            if not data[1]:
-                                continue
-                            else:
-                                device.project = data[1]
-                        # Location
-                        elif j == 3:
-                            if not data[1]:
-                                continue
-                            elif data[1].lower().__contains__("home"):
-                                flash("Cannot take device home.",
-                                      category='error')
-                            else:
-                                device.location = data[1]
+                        elif data[1] > data_list[i][j + 1][1]:
+                            flash("End Date must be later than Start Date",
+                                    category='error')
+                            return redirect(request.referrer)
 
-            db.session.commit()
-            flash("Device(s) updated!", category="success")
+                        else:
+                            device.calibration_start = datetime.strptime(
+                                data[1], "%Y-%m-%d")
+                            device.calibration_end = datetime.strptime(
+                                data_list[i][j + 1][1], "%Y-%m-%d")
+                            device.is_calibrated = True
+                    # Project
+                    if j == 6:
+                        if not data[1]:
+                            continue
+                        else:
+                            device.project = data[1]
+                    # Location
+                    if j == 7:
+                        if not data[1]:
+                            continue
+                        elif data[1].lower().__contains__("home"):
+                            flash("Cannot take device home.",
+                                    category='error')
+                        else:
+                            device.location = data[1]
 
-    return render_template("update_devices.html", user=current_user, devices=devices, users=users,
-                           device_category=device_category, btnradio=btnradio)
+        else:
+            for i in range(0, len(data_list)):
+                device_id_str = data_list[i][0][0].split('_')[-1:]
+                device_id = int(device_id_str[0])
+                device = Device.query.get(device_id)
+                for j in range(0, 4):
+                    data = data_list[i][j]
+                    # calStart & calEnd
+                    if j == 0:
+                        if not data[1] and not data_list[i][j + 1][1]:
+                            continue
+                        elif data[1] and not data_list[i][j + 1][1]:
+                            flash('Calibration End Date not entered',
+                                    category='error')
+                            return redirect(request.referrer)
+
+                        elif not data[1] and data_list[i][j + 1][1]:
+                            flash('Calibration Start Date not entered',
+                                    category='error')
+                            return redirect(request.referrer)
+
+                        elif data[1] > data_list[i][j + 1][1]:
+                            flash("End Date must be later than Start Date",
+                                    category='error')
+                            return redirect(request.referrer)
+                        else:
+                            device.calibration_start = datetime.strptime(
+                                data[1], "%Y-%m-%d")
+                            device.calibration_end = datetime.strptime(
+                                data_list[i][j + 1][1], "%Y-%m-%d")
+                            device.is_calibrated = True
+                    # Project
+                    if j == 2:
+                        if not data[1]:
+                            continue
+                        else:
+                            device.project = data[1]
+                    # Location
+                    elif j == 3:
+                        if not data[1]:
+                            continue
+                        elif data[1].lower().__contains__("home"):
+                            flash("Cannot take device home.",
+                                    category='error')
+                        else:
+                            device.location = data[1]
+
+        db.session.commit()
+        flash("Device(s) updated!", category="success")
+
+    return render_template("edit_devices.html", user=current_user, devices=devices, device_category=device_category)
 
 @views.route('/add_device', methods=['GET', 'POST'])
 @login_required
