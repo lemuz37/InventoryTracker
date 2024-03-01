@@ -44,6 +44,13 @@ $(document).ready(function () {
         },
       },
     ],
+    columnDefs: [
+      {
+        targets: 0,
+        width: "128.767px"
+      }
+    ],
+    autoWidth: false
   });
 });
 
@@ -66,6 +73,32 @@ $(document).ready(function () {
         },
       },
     ],
+    columnDefs: [
+      {
+        targets: 0,
+        width: "128.767px"
+      }
+    ],
+    autoWidth: false
+  });
+});
+
+// Data table for reservations devices page.
+$(document).ready(function () {
+  $("#reservations_table").DataTable({
+    paging: true,
+    ordering: true,
+    searching: true,
+    lengthMenu: [5, 10, 25, 50, 100],
+    pageLength: 5,
+    responsive: true,
+    columnDefs: [
+      {
+        targets: 0,
+        width: "128.767px"
+      }
+    ],
+    autoWidth: false
   });
 });
 

@@ -1,0 +1,623 @@
+{% extends "base.html" %}
+<title>{% block title %}
+    {% if device_category == "ECG" %}
+    ECG Devices
+    {% elif device_category == "Vitals" %}
+    Vitals Devices
+    {% elif device_category == "Spirometer" %}
+    Spirometer Devices
+    {% elif device_category == "Calibration Syringe" %}
+    Calibration Syringes
+    {% elif device_category == "Simulator" %}
+    Simulators
+    {% elif device_category == "Scales" %}
+    Scales
+    {% elif device_category == "Engineering Tools" %}
+    Engineering Tools
+    {% endif %}
+    {% endblock %}</title>
+
+{% block content %}
+<div class="row" style="padding-top: 2%; padding-bottom: 2%;">
+    <div class="col">
+
+    </div>
+    <div class="col-10">
+        <div class="row">
+            <div class="col-md-4">
+                <fieldset class="form-group ">
+                    <div class="form-check justify-content-center">
+                        <input class="form-check-input" type="radio" name="optionsRadios" id="calibrated_device1"
+                            value="True" checked="" onclick="handleRadioClick(this)">
+                        <label class="form-check-label" for="calibrated_device1">
+                            Calibrated Table
+                        </label>
+                    </div>
+                    <div class="form-check justify-content-center">
+                        <input class="form-check-input" type="radio" name="optionsRadios" id="calibrated_device2"
+                            value="False" onclick="handleRadioClick(this)">
+                        <label class="form-check-label" for="calibrated_device2">
+                            Non-Calibrated Table
+                        </label>
+                    </div>
+                    <div class="form-check justify-content-center">
+                        <input class="form-check-input" type="radio" name="optionsRadios" id="calibrated_device2"
+                            value="" onclick="handleRadioClick(this)">
+                        <label class="form-check-label" for="calibrated_device2">
+                            Reservations
+                        </label>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="col-md-4 text-center" style="padding-top: 17px;">
+                {% if device_category == "ECG" %}
+                <h2 align="center"> ECG Devices </h2>
+                {% elif device_category == "Vitals" %}
+                <h2 align="center"> Vitals Devices </h2>
+                {% elif device_category == "Spirometer" %}
+                <h2 align="center"> Spirometer Devices </h2>
+                {% elif device_category == "Calibration Syringe" %}
+                <h2 align="center"> Calibration Syringes </h2>
+                {% elif device_category == "Simulator" %}
+                <h2 align="center"> Simulators </h2>
+                {% elif device_category == "Scales" %}
+                <h2 align="center"> Scales </h2>
+                {% elif device_category == "Engineering Tools" %}
+                <h2 align="center"> Engineering Tools </h2>
+                {% endif %}
+            </div>
+            <div class="col-md-4">
+
+            </div>
+        </div>
+        <hr>
+
+        <!-- 
+            *********************************************************************
+            *                                                                   *
+            *                                                                   *
+            *                                                                   *
+            *                           Calibrated Table                        *
+            *                                                                   *
+            *                                                                   *
+            *                                                                   *
+            *********************************************************************
+        -->
+
+        <div class="table-responsive" id="calibrated_table_container">
+
+            <h5 align="center">Table Legend</h5>
+            <div class="legend">
+                <span class="legend-item">
+                    <span class="color-box" style="background-color: red;"></span>Calibration Expired
+                </span>
+                <span class="legend-item">
+                    <span class="color-box" style="background-color: orange;"></span> Calibration Due Soon
+                </span>
+                <span class="legend-item">
+                    <span class="color-box" style="background-color: white;"></span>
+                    <span class="color-box" style="background-color: lightgrey;"></span> Is Calibrated
+                </span>
+                <span class="legend-item">
+                    <span class="color-box" style="background-color: #75caeb;"></span> Reserved
+                </span>
+            </div>
+
+            </br>
+
+            <table id="calibrated_table" class="table table-striped table-bordered table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col" class="header text-center">Status</th>
+                        <th scope="col" class="header text-center">Device Name</th>
+                        <th scope="col" class="header text-center">Model/Part Number</th>
+                        <th scope="col" class="header text-center">Serial Number</th>
+                        <th scope="col" class="header text-center">Calibration Start Date</th>
+                        <th scope="col" class="header text-center">Calibration End Date</th>
+                        <th scope="col" class="header text-center">Owner</th>
+                        <th scope="col" class="header text-center">Project</th>
+                        <th scope="col" class="header text-center">Location</th>
+                    </tr>
+                </thead>
+                <tbody id="myTable">
+                    {% set count = namespace(value=-1) %}
+                    {% for device in devices %}
+                    {% set count.value = count.value + 1 %}
+                    {% if device.is_calibrated == True %}
+                    {% if device.reservation %} <tr class="table-info">
+                        {% elif (device.calibration_end - today).days <= 0 %} <tr class="table-danger">
+                            {% elif (device.calibration_end - today).days <= 30 %} <tr class="table-warning">
+                                {% else %}
+                    <tr>
+                        {% endif %}
+                        <td>
+                            <table class="table table-sm" style="margin-bottom: 0.2rem;">
+                                <tbody>
+                                    <tr>
+                                        {% if device.checked_out %}
+                                        <th scope="row" class="text-center">
+                                            {{ device.user.user_name }}
+                                        </th>
+                                        {% else %}
+                                        <th scope="row" class="text-center" style="color: green;">
+                                            Available
+                                        </th>
+                                        {% endif %}
+                                        <!-- Add a status icon based on the device's status -->
+                                        <td class="text-center">
+                                            {% if device.checked_out == False %}
+                                            <i class="fas fa-check-circle" style="color: green;" title="Available"></i>
+                                            {% else %}
+                                            <i class="fas fa-times-circle" style="color: red;"
+                                                title="Not Available"></i>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+
+                                <!-- Primary button -->
+                                <form action="/checkout_device" method="post" style="display: inline;">
+                                    <input type="hidden" name="device_id" value="{{device.id}}">
+                                    <button type="submit" class="btn btn-primary">Check Out</button>
+                                </form>
+
+                                <div class="btn-group" role="group">
+                                    <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle"
+                                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                        <!-- Trigger/Open The Modal -->
+                                        <button type="button" class="dropdown-item" data-bs-toggle="modal"
+                                            data-bs-target="#reserveDeviceModal" data-device-id="{{device.id}}">
+                                            Reserve Device
+                                        </button>
+                                        <!-- Dropdown item with form and hidden input -->
+                                        <form action="/generate_qr_code" method="post">
+                                            <input type="hidden" name="device_id" value="{{device.id}}">
+                                            <button type="submit" class="dropdown-item">Generate QR
+                                                Code</button>
+                                        </form>
+                                        {% if user.admin == True %}
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <button type="button" class="dropdown-item btn-danger" data-bs-toggle="modal"
+                                            data-bs-target="#deleteDeviceModal{{count.value}}">
+                                            Delete Device
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Delete Device Modal -->
+                        <div class="modal fade" id="deleteDeviceModal{{count.value}}" tabindex="-1" role="dialog"
+                            aria-labelledby="deleteDeviceModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="deleteDeviceModalLabel">Are you
+                                            sure?
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <form action="/delete_device" method="post">
+                                        <input type="hidden" name="device_id" id="hiddenDeviceId" value="{{device.id}}">
+                                        <div class="modal-body text-center">
+                                            Are you sure you want to delete this device? <br><br>
+                                            Device Category: <b>{{device.device_category}}</b> <br>
+                                            Name: <b>{{device.device_name}}</b> <br>
+                                            Serial Number: <b>{{device.serial_number}}</b>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-danger">Delete
+                                                Device</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <td class="text-center">{{ device.device_name }}</td>
+                        <td class="text-center">{{ device.model_number }}</td>
+                        <td class="text-center">{{ device.serial_number }}</td>
+                        <td class="text-center">{{ device.calibration_start.strftime("%m/%d/%Y") }}</td>
+                        <td class="text-center">{{ device.calibration_end.strftime("%m/%d/%Y") }}</td>
+                        <td class="text-center">{{ device.owner }}</td>
+                        <td class="text-center">{{ device.project }}</td>
+                        <td class="text-center">{{ device.location }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+
+        <!-- Reserve Device Modal -->
+        <div class="modal fade" id="reserveDeviceModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+            aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">Reserve Device</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="/reserve_device" method="post">
+                        <div class="modal-body">
+
+                            <input type="hidden" name="device_id" id="hiddenDeviceId">
+                            <div class="mb-3">
+                                <label for="reservation_start_date" class="form-label">Reservation Start
+                                    Date:</label>
+                                <input type="date" class="form-control" id="reservation_start_date"
+                                    name="reservation_start_date" autocomplete="off" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reservation_end_date" class="form-label">Reservation
+                                    End Date:</label>
+                                <input type="date" class="form-control" id="reservation_end_date"
+                                    name="reservation_end_date" autocomplete="off" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="project" class="form-label">Project:</label>
+                                <input type="text" class="form-control" name="project" id="project"
+                                    placeholder="Project (Optional)" autocomplete="off" aria-label="Project" />
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Reserve
+                                Device</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 
+            *********************************************************************
+            *                                                                   *
+            *                                                                   *
+            *                                                                   *
+            *                         Uncalibrated Table                        *
+            *                                                                   *
+            *                                                                   *
+            *                                                                   *
+            *********************************************************************
+        -->
+
+        <div class="table-responsive" id="noncalibrated_table_container" style="display: none;">
+
+            <h5 align="center">Table Legend</h5>
+            <div class="legend">
+                <span class="legend-item">
+                    <span class="color-box" style="background-color: #75caeb;"></span> Reserved
+                </span>
+            </div>
+
+            </br>
+
+            <table id="noncalibrated_table" class="table table-striped table-bordered table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col" class="header text-center">Status</th>
+                        <th scope="col" class="header text-center">Device Name</th>
+                        <th scope="col" class="header text-center">Model/Part Number</th>
+                        <th scope="col" class="header text-center">Serial Number</th>
+                        <th scope="col" class="header text-center">Owner</th>
+                        <th scope="col" class="header text-center">Project</th>
+                        <th scope="col" class="header text-center">Location</th>
+                    </tr>
+                </thead>
+                <tbody id="myTable">
+                    {% set count = namespace(value=-1) %}
+                    {% for device in devices %}
+                    {% set count.value = count.value + 1 %}
+                    {% if device.is_calibrated == False %}
+                    {% if device.reservation %} <tr class="table-info">
+                        {% else %}
+                    <tr>
+                        {% endif %}
+                        <td>
+                            <table class="table table-sm" style="margin-bottom: 0.2rem;">
+                                <tbody>
+                                    <tr>
+                                        {% if device.checked_out %}
+                                        <th scope="row" class="text-center">
+                                            {{ device.user.user_name }}
+                                        </th>
+                                        {% else %}
+                                        <th scope="row" class="text-center" style="color: green;">
+                                            Available
+                                        </th>
+                                        {% endif %}
+                                        <!-- Add a status icon based on the device's status -->
+                                        <td class="text-center">
+                                            {% if device.checked_out == False %}
+                                            <i class="fas fa-check-circle" style="color: green;" title="Available"></i>
+                                            {% else %}
+                                            <i class="fas fa-times-circle" style="color: red;"
+                                                title="Not Available"></i>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+
+                                <!-- Primary button -->
+                                <form action="/checkout_device" method="post" style="display: inline;">
+                                    <input type="hidden" name="device_id" value="{{device.id}}">
+                                    <button type="submit" class="btn btn-primary">Check Out</button>
+                                </form>
+
+                                <div class="btn-group" role="group">
+                                    <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle"
+                                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                        <!-- Trigger/Open The Modal -->
+                                        <button type="button" class="dropdown-item" data-bs-toggle="modal"
+                                            data-bs-target="#reserveDeviceModal" data-device-id="{{device.id}}">
+                                            Reserve Device
+                                        </button>
+                                        <!-- Dropdown item with form and hidden input -->
+                                        <form action="/generate_qr_code" method="post">
+                                            <input type="hidden" name="device_id" value="{{device.id}}">
+                                            <button type="submit" class="dropdown-item">Generate QR
+                                                Code</button>
+                                        </form>
+                                        {% if user.admin == True %}
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <button type="button" class="dropdown-item btn-danger" data-bs-toggle="modal"
+                                            data-bs-target="#deleteDeviceModal{{count.value}}">
+                                            Delete Device
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Delete Device Modal -->
+                        <div class="modal fade" id="deleteDeviceModal{{count.value}}" tabindex="-1" role="dialog"
+                            aria-labelledby="deleteDeviceModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="deleteDeviceModalLabel">Are you
+                                            sure?
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <form action="/delete_device" method="post">
+                                        <input type="hidden" name="device_id" id="hiddenDeviceId" value="{{device.id}}">
+                                        <div class="modal-body text-center">
+                                            Are you sure you want to delete this device? <br><br>
+                                            Device Category: <b>{{device.device_category}}</b> <br>
+                                            Name: <b>{{device.device_name}}</b> <br>
+                                            Serial Number: <b>{{device.serial_number}}</b>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-danger">Delete
+                                                Device</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <td class="text-center">{{ device.device_name }}</td>
+                        <td class="text-center">{{ device.model_number }}</td>
+                        <td class="text-center">{{ device.serial_number }}</td>
+                        <td class="text-center">{{ device.owner }}</td>
+                        <td class="text-center">{{ device.project }}</td>
+                        <td class="text-center">{{ device.location }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+
+        <!-- 
+            *********************************************************************
+            *                                                                   *
+            *                                                                   *
+            *                                                                   *
+            *                          Reservation Table                        *
+            *                                                                   *
+            *                                                                   *
+            *                                                                   *
+            *********************************************************************
+        -->
+
+        <div class="table-responsive" id="reservations_table_container" style="display: none;">
+
+            <table id="reservations_table" class="table table-striped table-bordered table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col" class="header text-center">Status</th>
+                        <th scope="col" class="header text-center">Device Name</th>
+                        <th scope="col" class="header text-center">Model/Part Number</th>
+                        <th scope="col" class="header text-center">Serial Number</th>
+                        <th scope="col" class="header text-center">Reservation Start Date</th>
+                        <th scope="col" class="header text-center">Reservation End Date</th>
+                        <th scope="col" class="header text-center">Reserved By</th>
+                        <th scope="col" class="header text-center">Reserved For</th>
+                        <th scope="col" class="header text-center">Project</th>
+                    </tr>
+                </thead>
+                <tbody id="myTable">
+                    {% set count = namespace(value=-1) %}
+                    {% for device in devices %}
+                    {% set count.value = count.value + 1 %}
+                    {% if device.reservation %}
+                    <tr>
+                        <td>
+                            <table class="table table-sm" style="margin-bottom: 0.2rem;">
+                                <tbody>
+                                    <tr>
+                                        {% if device.checked_out %}
+                                        <th scope="row" class="text-center">
+                                            {{ device.user.user_name }}
+                                        </th>
+                                        {% else %}
+                                        <th scope="row" class="text-center" style="color: green;">
+                                            Available
+                                        </th>
+                                        {% endif %}
+                                        <!-- Add a status icon based on the device's status -->
+                                        <td class="text-center">
+                                            {% if device.checked_out == False %}
+                                            <i class="fas fa-check-circle" style="color: green;" title="Available"></i>
+                                            {% else %}
+                                            <i class="fas fa-times-circle" style="color: red;"
+                                                title="Not Available"></i>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+
+                                <!-- Primary button -->
+                                <form action="/checkout_device" method="post" style="display: inline;">
+                                    <input type="hidden" name="device_id" value="{{device.id}}">
+                                    <button type="submit" class="btn btn-primary">Check Out</button>
+                                </form>
+
+                                <div class="btn-group" role="group">
+                                    <button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle"
+                                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                        <!-- Trigger/Open The Modal -->
+                                        <button type="button" class="dropdown-item" data-bs-toggle="modal"
+                                            data-bs-target="#editReservationModal{{count.value}}">
+                                            Edit Reservation
+                                        </button>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <button type="button" class="dropdown-item btn-danger" data-bs-toggle="modal"
+                                            data-bs-target="#cancelReservationModal{{count.value}}">
+                                            Cancel Reservation
+                                        </button>
+                                    </div>
+                                </div>
+                            </div> <!-- Edit User Modal -->
+                            <div class="modal fade" id="editReservationModal{{count.value}}" tabindex="-1" role="dialog"
+                                aria-labelledby="editReservationLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="editReservationLabel">Edit Reservation</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <form action="/edit_reservation" method="post">
+                                            <input type="hidden" name="reservation_id" id="reservation_id" value="{{device.reservation.id}}">
+                                            <div class="modal-body">
+                                                <input type="hidden" name="device_id" id="hiddenDeviceId">
+                                                <div class="mb-3">
+                                                    <label for="reservation_start_date" class="form-label">Reservation Start
+                                                        Date:</label>
+                                                    <input type="date" class="form-control" id="reservation_start_date"
+                                                        name="reservation_start_date" autocomplete="off" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="reservation_end_date" class="form-label">Reservation
+                                                        End Date:</label>
+                                                    <input type="date" class="form-control" id="reservation_end_date"
+                                                        name="reservation_end_date" autocomplete="off" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="project" class="form-label">Project:</label>
+                                                    <input type="text" class="form-control" name="project" id="project"
+                                                        placeholder="Project (Optional)" autocomplete="off" aria-label="Project" />
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Close</button>
+                                                <button type="submit" class="btn btn-primary" id="edit_user_btn">Edit
+                                                    Reservation</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Cance Reservation Modal -->
+                        <div class="modal fade" id="cancelReservationModal{{count.value}}" tabindex="-1" role="dialog"
+                            aria-labelledby="cancelReservationModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="cancelResrvationModalLabel">Are you
+                                            sure?
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <form action="/cancel_reservation" method="post">
+                                        <input type="hidden" name="reservation_id" id="hiddenReservationId"
+                                            value="{{device.reservation.id}}">
+                                        <div class="modal-body text-center">
+                                            Are you sure you want to cancel this device reservation? <br><br>
+                                            Name: <b>{{device.device_name}}</b> <br>
+                                            Serial Number: <b>{{device.serial_number}}</b><br>
+                                            Reservation Period: <b>{{ device.reservation.start_time.strftime("%m/%d/%Y")
+                                                }} - {{ device.reservation.end_time.strftime("%m/%d/%Y") }}</b>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-danger">Cancel
+                                                Reservation</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <td class="text-center">{{ device.device_name }}</td>
+                        <td class="text-center">{{ device.model_number }}</td>
+                        <td class="text-center">{{ device.serial_number }}</td>
+                        <td class="text-center">{{ device.reservation.start_time.strftime("%m/%d/%Y") }}</td>
+                        <td class="text-center">{{ device.reservation.end_time.strftime("%m/%d/%Y") }}</td>
+                        <td class="text-center">{{ device.reservation.user.first_name }} {{
+                            device.reservation.user.last_name }}</td>
+                        <td class="text-center">{{ device.reservation.user.team }} Team</td>
+                        <td class="text-center">{{ device.reservation.project }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+    <div class="col">
+
+    </div>
+</div>
+{% endblock %}

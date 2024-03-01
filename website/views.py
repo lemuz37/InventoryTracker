@@ -113,67 +113,12 @@ def update_device_location():
     flash("Device project updated!", category="success")
     return redirect(request.referrer)
 
-@views.route('/ecg_devices', methods=['GET'])
+@views.route('/devices/<device_category>')
 @login_required
-def ecg_devices():
-    ecg_devices = Device.query.filter(Device.device_category == "ECG").all()
+def show_device_table(device_category):
+    devices = Device.query.filter(Device.device_category == device_category).all()
     today = datetime.now()
-    return render_template("device_templates/ecg_devices.html", user=current_user, devices=ecg_devices, today=today)
-
-
-@views.route('/vital_devices', methods=['GET'])
-@login_required
-def vitals_devices():
-    vitals_devices = Device.query.filter(
-        Device.device_category == "Vitals").all()
-    today = datetime.now()
-    return render_template("device_templates/vitals_devices.html", user=current_user, devices=vitals_devices, today=today)
-
-
-@views.route('/spirometer_devices', methods=['GET'])
-@login_required
-def spirometer_devices():
-    spirometer_devices = Device.query.filter(
-        Device.device_category == "Spirometer").all()
-    today = datetime.now()
-    return render_template("device_templates/spirometer_devices.html", user=current_user, devices=spirometer_devices, today=today)
-
-
-@views.route('/calibration_syringes', methods=['GET'])
-@login_required
-def cal_syringe_devices():
-    calibration_syringes = Device.query.filter(
-        Device.device_category == "Calibration Syringe").all()
-    today = datetime.now()
-    return render_template("device_templates/calibration_syringes.html", user=current_user, devices=calibration_syringes, today=today)
-
-
-@views.route('/simulator_devices', methods=['GET'])
-@login_required
-def simulator_devices():
-    simulator_devices = Device.query.filter(
-        Device.device_category == "Simulator").all()
-    today = datetime.now()
-    return render_template("device_templates/simulator_devices.html", user=current_user, devices=simulator_devices, today=today)
-
-
-@views.route('/scale_devices', methods=['GET'])
-@login_required
-def scales_devices():
-    scales_devices = Device.query.filter(
-        Device.device_category == "Scales").all()
-    today = datetime.now()
-    radio_btn = "True"
-    return render_template("device_templates/scales_devices.html", user=current_user, devices=scales_devices, today=today, btnradio=radio_btn)
-
-
-@views.route('/eng_tools', methods=['GET'])
-@login_required
-def egn_tools():
-    eng_tools = Device.query.filter(
-        Device.device_category == "Engineering Tools").all()
-    today = datetime.now()
-    return render_template("device_templates/eng_tools.html", user=current_user, devices=eng_tools, today=today)
+    return render_template("devices.html", user=current_user, devices=devices, device_category=device_category, today=today)
 
 @views.route('/update_devices', methods=['GET', 'POST'])
 @login_required
@@ -547,6 +492,39 @@ def reserve_device():
     flash("Device reserved!", category="success")
     return redirect(request.referrer)
 
+@views.route('/edit_reservation', methods=['POST'])
+def edit_reservation():
+    reservation_id = request.form.get('reservation_id')
+    reservation = Reservation.query.get(reservation_id)
+
+    reservation_start = datetime.strptime(request.form.get('reservation_start_date'), "%Y-%m-%d")
+    reservation_end = datetime.strptime(request.form.get('reservation_end_date'), "%Y-%m-%d")
+    project = request.form.get('project')
+
+    if reservation_end < reservation_start:
+            flash('Error: The end date cannot be earlier than the start date.', category="error")
+            return redirect(request.referrer)
+
+    reservation.start_time = reservation_start
+    reservation.end_time = reservation_end
+    if project:
+        reservation.project = project
+
+    db.session.commit()
+    flash('The reservation has been updated!', category="success")
+    return redirect(request.referrer)
+
+
+@views.route('/cancel_reservation', methods=['POST'])
+def cancel_reservation():
+    reservation_id = request.form.get('reservation_id')
+    reservation = Reservation.query.get(int(reservation_id))
+    db.session.delete(reservation)
+    db.session.commit()
+    flash('The reservation has been canceled!', category="success")
+    return redirect(request.referrer)
+
+
 @views.route('/generate_qr_code', methods=['POST'])
 def generate_qr_code():
 
@@ -613,6 +591,8 @@ def generate_user_qr_code():
 def delete_device():
     device_id = request.form.get('device_id')
     device = Device.query.get(device_id)
+    if device.reservation:
+        db.session.delete(device.reservation)
     db.session.delete(device)
     db.session.commit()
     flash('Another one bites the dust.', category="success")

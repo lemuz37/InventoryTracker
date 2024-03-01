@@ -20,10 +20,22 @@ function handleRadioClick(isCalibrated) {
       "block";
     document.getElementById("noncalibrated_table_container").style.display =
       "none";
-  } else {
+      document.getElementById("reservations_table_container").style.display =
+      "none";
+  } else if (isCalibrated.value == "False") {
     document.getElementById("calibrated_table_container").style.display =
       "none";
     document.getElementById("noncalibrated_table_container").style.display =
+      "initial";
+      document.getElementById("reservations_table_container").style.display =
+      "none";
+  }
+  else {
+    document.getElementById("calibrated_table_container").style.display =
+      "none";
+    document.getElementById("noncalibrated_table_container").style.display =
+      "none";
+    document.getElementById("reservations_table_container").style.display =
       "block";
   }
 }
