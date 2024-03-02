@@ -47,10 +47,10 @@ $(document).ready(function () {
     columnDefs: [
       {
         targets: 0,
-        width: "128.767px"
-      }
+        width: "128.767px",
+      },
     ],
-    autoWidth: false
+    autoWidth: false,
   });
 });
 
@@ -76,10 +76,10 @@ $(document).ready(function () {
     columnDefs: [
       {
         targets: 0,
-        width: "128.767px"
-      }
+        width: "128.767px",
+      },
     ],
-    autoWidth: false
+    autoWidth: false,
   });
 });
 
@@ -95,19 +95,68 @@ $(document).ready(function () {
     columnDefs: [
       {
         targets: 0,
-        width: "128.767px"
-      }
+        width: "128.767px",
+      },
     ],
-    autoWidth: false
+    autoWidth: false,
   });
 });
 
-// Data table for update devices page.
+// Data table for edit devices page.
 $(document).ready(function () {
-  $("#update_device_table").DataTable({
+  $("#edit_device_table").DataTable({
     paging: true, // Enable pagination
+    searching: true,
     lengthMenu: [5, 10, 15, 20, 25, 50, 100],
     pageLength: 5, // Number of rows per page
+    columnDefs: [
+      {
+        targets: 5,
+        width: "59.2px",
+      },
+      {
+        targets: 6,
+        width: "69.2px",
+      },
+    ],
+  });
+});
+
+// Data table for admin edit devices page.
+$(document).ready(function () {
+  $("#admin_edit_device_table").DataTable({
+    paging: true, // Enable pagination
+    searching: true,
+    lengthMenu: [5, 10, 15, 20, 25, 50, 100],
+    pageLength: 5, // Number of rows per page
+    columnDefs: [
+      {
+        targets: [0, 1, 2],
+        visible: false,
+        searchable: true,
+      },
+      {
+        targets: 3,
+        width: "107.4px",
+      },
+      {
+        targets: 4,
+        width: "201.2px",
+      },
+      {
+        targets: 6,
+        width: "130px",
+      },
+      {
+        targets: 10,
+        width: "59.2px",
+      },
+      {
+        targets: 11,
+        width: "69.2px",
+      },
+    ],
+    autoWidth: false,
   });
 });
 
@@ -117,11 +166,9 @@ $(document).ready(function () {
     paging: true, // Enable pagination
     pageLength: 5, // Number of rows per page
     lengthMenu: [5, 10, 15, 20, 25, 50, 100],
-    // Add more options as needed
   });
 });
 
-// Event handling for modals and inactivity
 // Focus on input field when scan device modal opens
 $("#scanDeviceModal").on("shown.bs.modal", function () {
   $(this).find("#scan_data").focus().select();

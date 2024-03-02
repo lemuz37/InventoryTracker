@@ -78,19 +78,7 @@
   <div class="col-10">
     <h2 align="center">{{user.first_name}}'s Calibrated Devices</h2>
 
-    <h5 align="center">Table Legend</h5>
-    <div class="legend">
-      <span class="legend-item">
-        <span class="color-box" style="background-color: red;"></span>Calibration Expired
-      </span>
-      <span class="legend-item">
-        <span class="color-box" style="background-color: orange;"></span> Calibration Due Soon
-      </span>
-      <span class="legend-item">
-        <span class="color-box" style="background-color: white;"></span>
-        <span class="color-box" style="background-color: lightgrey;"></span> Is Calibrated
-      </span>
-    </div>
+
     </br>
 
     <div class="table-responsive">
@@ -191,9 +179,20 @@
               {% endif %} {% endfor %}
         </tbody>
       </table>
+    </div>
 
-
-
+    <h5 align="center">Table Legend</h5>
+    <div class="legend">
+      <span class="legend-item">
+        <span class="color-box" style="background-color: white;"></span>
+        <span class="color-box" style="background-color: lightgrey;"></span> Is Calibrated
+      </span>
+      <span class="legend-item">
+        <span class="color-box" style="background-color: orange;"></span> Calibration Due Soon
+      </span>
+      <span class="legend-item">
+        <span class="color-box" style="background-color: red;"></span>Calibration Expired
+      </span>
     </div>
   </div>
   <div class="col">

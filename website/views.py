@@ -3,14 +3,13 @@ from flask_login import login_required, current_user
 from sqlalchemy import true
 from .models import Device, User, Reservation
 from . import db
-import time
-import json
 import ast
 import qrcode
 import io
 from datetime import datetime
 
 views = Blueprint('views', __name__)
+
 
 @views.route('/', methods=['GET', 'POST'])
 @login_required
@@ -27,6 +26,8 @@ def home():
     return render_template("home.html", user=current_user, devices=user_checked_out_devices, today=today)
 
 # Check out device with qr code
+
+
 @views.route('/assign_device_w_qr_code', methods=['POST'])
 def assign_device_w_qr_code():
     def is_valid_dict_string(s):
@@ -74,6 +75,8 @@ def assign_device_w_qr_code():
     return redirect(request.referrer)
 
 # Update device project from user home page
+
+
 @views.route('/update_device_project', methods=['POST'])
 def update_device_project():
     device_id = request.form.get('device_id')
@@ -87,13 +90,15 @@ def update_device_project():
 
     if not project:
         return redirect(request.referrer)
-    
+
     device.project = project
     db.session.commit()
     flash("Device project updated!", category="success")
     return redirect(request.referrer)
 
 # Update device location from user home page
+
+
 @views.route('/update_device_location', methods=['POST'])
 def update_device_location():
     device_id = request.form.get('device_id')
@@ -107,29 +112,33 @@ def update_device_location():
 
     if not location:
         return redirect(request.referrer)
-    
+
     device.location = location
     db.session.commit()
     flash("Device project updated!", category="success")
     return redirect(request.referrer)
 
+
 @views.route('/devices/<device_category>')
 @login_required
 def show_device_table(device_category):
-    devices = Device.query.filter(Device.device_category == device_category).all()
+    devices = Device.query.filter(
+        Device.device_category == device_category).all()
     today = datetime.now()
     return render_template("devices.html", user=current_user, devices=devices, device_category=device_category, today=today)
+
 
 @views.route('/edit_devices/<device_category>', methods=['GET', 'POST'])
 @login_required
 def edit_devices(device_category):
     def duplicate_check(serial_number):
         deviceQuery = Device.query.filter_by(device_category=device_category,
-                                              serial_number=serial_number).first()
+                                             serial_number=serial_number).first()
         if deviceQuery:
             return true
 
-    devices = Device.query.filter(Device.device_category == device_category).all()
+    devices = Device.query.filter(
+        Device.device_category == device_category).all()
 
     if request.method == 'POST':
         # For debugging POST requests
@@ -141,10 +150,9 @@ def edit_devices(device_category):
         (k := next(iter(data_dict)), data_dict.pop(k))
         # Pop last element in dictionary
         data_dict.popitem()[1]
-        device_category = data_dict.popitem()[1]
 
         if current_user.admin == True:
-            displayed_devices = int(len(data_dict)/8)
+            displayed_devices = int(len(data_dict)/9)
         else:
             displayed_devices = int(len(data_dict)/4)
 
@@ -154,7 +162,7 @@ def edit_devices(device_category):
         while displayed_devices > 0:
             if current_user.admin == True:
                 data_list[count] = list(data_dict.items())[
-                    (count) * 8: (count + 1) * 8]
+                    (count) * 9: (count + 1) * 9]
             else:
                 data_list[count] = list(data_dict.items())[
                     (count) * 4: (count + 1) * 4]
@@ -166,56 +174,60 @@ def edit_devices(device_category):
                 device_id_str = data_list[i][0][0].split('_')[-1:]
                 device_id = int(device_id_str[0])
                 device = Device.query.get(device_id)
-                for j in range(0, 8):
+                for j in range(0, 9):
                     data = data_list[i][j]
-                    # Device Category
                     if j == 0:
+                        if data[1] == "Select Team":
+                            continue
+                        else:
+                            device.owner = data[0]
+                    # Device Category
+                    if j == 1:
                         if data[1] == "Select Device Category":
                             continue
-
                         else:
                             device.device_category = data[1]
                     # Device Name
-                    if j == 1:
+                    if j == 2:
                         if not data[1]:
                             continue
                         else:
                             device.device_name = data[1]
                     # Model Number
-                    if j == 2:
+                    if j == 3:
                         if not data[1]:
                             continue
                         else:
                             device.model_number = data[1]
                     # Serial Number
-                    if j == 3:
+                    if j == 4:
                         if not data[1]:
                             continue
                         else:
                             if duplicate_check(data[1]):
                                 flash('Serial Number already exists in database.',
-                                        category='error')
+                                      category='error')
                                 return redirect(request.referrer)
 
                             else:
                                 device.serial_number = data[1]
                     # calStart and cal End
-                    if j == 4:
+                    if j == 5:
                         if not data[1] and not data_list[i][j + 1][1]:
                             continue
                         elif data[1] and not data_list[i][j + 1][1]:
                             flash('Calibration End Date not entered',
-                                    category='error')
+                                  category='error')
                             return redirect(request.referrer)
 
                         elif not data[1] and data_list[i][j + 1][1]:
                             flash('Calibration Start Date not entered',
-                                    category='error')
+                                  category='error')
                             return redirect(request.referrer)
 
                         elif data[1] > data_list[i][j + 1][1]:
                             flash("End Date must be later than Start Date",
-                                    category='error')
+                                  category='error')
                             return redirect(request.referrer)
 
                         else:
@@ -225,18 +237,18 @@ def edit_devices(device_category):
                                 data_list[i][j + 1][1], "%Y-%m-%d")
                             device.is_calibrated = True
                     # Project
-                    if j == 6:
+                    if j == 7:
                         if not data[1]:
                             continue
                         else:
                             device.project = data[1]
                     # Location
-                    if j == 7:
+                    if j == 8:
                         if not data[1]:
                             continue
                         elif data[1].lower().__contains__("home"):
                             flash("Cannot take device home.",
-                                    category='error')
+                                  category='error')
                         else:
                             device.location = data[1]
 
@@ -253,17 +265,17 @@ def edit_devices(device_category):
                             continue
                         elif data[1] and not data_list[i][j + 1][1]:
                             flash('Calibration End Date not entered',
-                                    category='error')
+                                  category='error')
                             return redirect(request.referrer)
 
                         elif not data[1] and data_list[i][j + 1][1]:
                             flash('Calibration Start Date not entered',
-                                    category='error')
+                                  category='error')
                             return redirect(request.referrer)
 
                         elif data[1] > data_list[i][j + 1][1]:
                             flash("End Date must be later than Start Date",
-                                    category='error')
+                                  category='error')
                             return redirect(request.referrer)
                         else:
                             device.calibration_start = datetime.strptime(
@@ -283,7 +295,7 @@ def edit_devices(device_category):
                             continue
                         elif data[1].lower().__contains__("home"):
                             flash("Cannot take device home.",
-                                    category='error')
+                                  category='error')
                         else:
                             device.location = data[1]
 
@@ -291,6 +303,7 @@ def edit_devices(device_category):
         flash("Device(s) updated!", category="success")
 
     return render_template("edit_devices.html", user=current_user, devices=devices, device_category=device_category)
+
 
 @views.route('/add_device', methods=['GET', 'POST'])
 @login_required
@@ -327,7 +340,7 @@ def addDevice():
         if not serial_number:
             flash('Please enter device Serial Number.', category='error')
             return redirect(request.referrer)
-    
+
         if device_owner == "Select Team":
             flash('Please select an Owner.', category='error')
             return redirect(request.referrer)
@@ -335,7 +348,7 @@ def addDevice():
         if location.lower().__contains__("home"):
             flash("Cannot take device home.", category='error')
             return redirect(request.referrer)
-        
+
         if not calStart and not calEnd:
             calStart = str(datetime.min)[:-9]
             calEnd = str(datetime.min)[:-9]
@@ -351,7 +364,7 @@ def addDevice():
                 flash("End Date must be later than Start Date", category='error')
                 return redirect(request.referrer)
             is_calibrated = True
-        
+
         if duplicate_check():
             flash('Device already exists in db', category='error')
             return redirect(request.referrer)
@@ -360,14 +373,15 @@ def addDevice():
         calEnd = datetime.strptime(calEnd, "%Y-%m-%d")
 
         new_device = Device(device_category=device_category, device_name=device_name,
-                             model_number=model_number, serial_number=serial_number, owner=device_owner,
-                             project="No Project", location=location, is_calibrated=is_calibrated, calibration_start=calStart,
-                             calibration_end=calEnd)
+                            model_number=model_number, serial_number=serial_number, owner=device_owner,
+                            project="No Project", location=location, is_calibrated=is_calibrated, calibration_start=calStart,
+                            calibration_end=calEnd)
         db.session.add(new_device)
         db.session.commit()
         flash('Device added!', category='success')
 
     return render_template("addDevice.html", user=current_user, devices=device_table, users=user_table, today=today)
+
 
 @views.route('/users', methods=['GET', 'POST'])
 @login_required
@@ -396,7 +410,7 @@ def checkout_device():
     if device.checked_out:
         flash('Device is not available', category="error")
         return redirect(request.referrer)
-    
+
     if device.reservation and device.reservation.start_time < now and now < device.reservation.end_time:
         if current_user.team == device.reservation.user.team:
             device.checkout_time = now
@@ -407,9 +421,10 @@ def checkout_device():
             flash("Device checked out!", category="success")
             return redirect(request.referrer)
 
-        flash("The device " + device.device_name + " is currently reserved by " + device.reservation.user.team +" team. Please try checking it out at a later time, or check other available devices.", category="error")
+        flash("The device " + device.device_name + " is currently reserved by the " + device.reservation.user.team +
+              " team. Please try checking it out at a later time, or check other available devices.", category="error")
         return redirect(request.referrer)
-    
+
     device.checkout_time = now
     device.user_id = current_user.id
     device.project = current_user.project
@@ -417,6 +432,7 @@ def checkout_device():
     db.session.commit()
     flash("Device checked out!", category="success")
     return redirect(request.referrer)
+
 
 @views.route('/return_device', methods=['POST'])
 def return_device():
@@ -435,14 +451,17 @@ def return_device():
     flash("Device returned!", category="success")
     return redirect(request.referrer)
 
+
 @views.route('/reserve_device', methods=['POST'])
 def reserve_device():
     # For debugging POST requests
     # data = request.form
     # print(data)
     device_id = request.form.get('device_id')
-    reservation_start = datetime.strptime(request.form.get('reservation_start_date'), "%Y-%m-%d")
-    reservation_end = datetime.strptime(request.form.get('reservation_end_date'), "%Y-%m-%d")
+    reservation_start = datetime.strptime(
+        request.form.get('reservation_start_date'), "%Y-%m-%d")
+    reservation_end = datetime.strptime(
+        request.form.get('reservation_end_date'), "%Y-%m-%d")
     project = request.form.get('project')
 
     device = Device.query.get(device_id)
@@ -452,13 +471,14 @@ def reserve_device():
         return redirect(request.referrer)
 
     if reservation_end < reservation_start:
-            flash('Error: The end date cannot be earlier than the start date.', category="error")
-            return redirect(request.referrer)
-    
+        flash('Error: The end date cannot be earlier than the start date.',
+              category="error")
+        return redirect(request.referrer)
+
     if device.reservation:
         flash('Device is not available for reservation.', category="error")
         return redirect(request.referrer)
-    
+
     new_reservation = Reservation(
         start_time=reservation_start,
         end_time=reservation_end,
@@ -467,7 +487,7 @@ def reserve_device():
         project=project
     )
     db.session.add(new_reservation)
-    
+
     if project:
         db.session.commit()
         flash("Device reserved for project " + project, category="success")
@@ -477,18 +497,22 @@ def reserve_device():
     flash("Device reserved!", category="success")
     return redirect(request.referrer)
 
+
 @views.route('/edit_reservation', methods=['POST'])
 def edit_reservation():
     reservation_id = request.form.get('reservation_id')
     reservation = Reservation.query.get(reservation_id)
 
-    reservation_start = datetime.strptime(request.form.get('reservation_start_date'), "%Y-%m-%d")
-    reservation_end = datetime.strptime(request.form.get('reservation_end_date'), "%Y-%m-%d")
+    reservation_start = datetime.strptime(
+        request.form.get('reservation_start_date'), "%Y-%m-%d")
+    reservation_end = datetime.strptime(
+        request.form.get('reservation_end_date'), "%Y-%m-%d")
     project = request.form.get('project')
 
     if reservation_end < reservation_start:
-            flash('Error: The end date cannot be earlier than the start date.', category="error")
-            return redirect(request.referrer)
+        flash('Error: The end date cannot be earlier than the start date.',
+              category="error")
+        return redirect(request.referrer)
 
     reservation.start_time = reservation_start
     reservation.end_time = reservation_end
@@ -603,6 +627,7 @@ def delete_user():
     flash('Another one bites the dust.', category="success")
     return redirect(request.referrer)
 
+
 @views.route('/assign_device', methods=['POST'])
 def user_assign_device():
     user_id = request.form.get('user_id')
@@ -611,7 +636,7 @@ def user_assign_device():
     user = User.query.filter_by(id=int(user_id)).first()
 
     device = Device.query.filter_by(device_category=device_category,
-                                     serial_number=serial_number).first()
+                                    serial_number=serial_number).first()
 
     if not device:
         flash("Device does not exist in database.", category="error")
@@ -624,6 +649,7 @@ def user_assign_device():
         db.session.commit()
         flash('Device assigned!', category='success')
     return redirect(request.referrer)
+
 
 @views.route('/edit_user', methods=['POST'])
 def edit_user():

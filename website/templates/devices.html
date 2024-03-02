@@ -18,7 +18,7 @@
     {% endblock %}</title>
 
 {% block content %}
-<div class="row" style="padding-top: 2%; padding-bottom: 2%;">
+<div class="row" style="padding-top: 2%; padding-bottom: 7.5%;">
     <div class="col">
 
     </div>
@@ -27,23 +27,23 @@
             <div class="col-md-4">
                 <fieldset class="form-group ">
                     <div class="form-check justify-content-center">
-                        <input class="form-check-input" type="radio" name="optionsRadios" id="calibrated_device1"
-                            value="True" checked="" onclick="handleRadioClick(this)">
-                        <label class="form-check-label" for="calibrated_device1">
+                        <input class="form-check-input" type="radio" name="optionsRadios" id="calibrated_radio_btn"
+                            value="True" onclick="handleRadioClick(this)" checked>
+                        <label class="form-check-label" for="calibrated_radio_btn">
                             Calibrated Table
                         </label>
                     </div>
                     <div class="form-check justify-content-center">
-                        <input class="form-check-input" type="radio" name="optionsRadios" id="calibrated_device2"
+                        <input class="form-check-input" type="radio" name="optionsRadios" id="non_calibrated_radio_btn"
                             value="False" onclick="handleRadioClick(this)">
-                        <label class="form-check-label" for="calibrated_device2">
+                        <label class="form-check-label" for="non_calibrated_radio_btn">
                             Non-Calibrated Table
                         </label>
                     </div>
                     <div class="form-check justify-content-center">
-                        <input class="form-check-input" type="radio" name="optionsRadios" id="calibrated_device2"
+                        <input class="form-check-input" type="radio" name="optionsRadios" id="reservation_radio_btn"
                             value="" onclick="handleRadioClick(this)">
-                        <label class="form-check-label" for="calibrated_device2">
+                        <label class="form-check-label" for="reservation_radio_btn">
                             Reservations
                         </label>
                     </div>
@@ -85,26 +85,6 @@
         -->
 
         <div class="table-responsive" id="calibrated_table_container">
-
-            <h5 align="center">Table Legend</h5>
-            <div class="legend">
-                <span class="legend-item">
-                    <span class="color-box" style="background-color: red;"></span>Calibration Expired
-                </span>
-                <span class="legend-item">
-                    <span class="color-box" style="background-color: orange;"></span> Calibration Due Soon
-                </span>
-                <span class="legend-item">
-                    <span class="color-box" style="background-color: white;"></span>
-                    <span class="color-box" style="background-color: lightgrey;"></span> Is Calibrated
-                </span>
-                <span class="legend-item">
-                    <span class="color-box" style="background-color: #75caeb;"></span> Reserved
-                </span>
-            </div>
-
-            </br>
-
             <table id="calibrated_table" class="table table-striped table-bordered table-sm">
                 <thead>
                     <tr>
@@ -238,7 +218,24 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </br>
 
+            <h5 align="center">Table Legend</h5>
+            <div class="legend">
+                <span class="legend-item">
+                    <span class="color-box" style="background-color: white;"></span>
+                    <span class="color-box" style="background-color: lightgrey;"></span> Is Calibrated
+                </span>
+                <span class="legend-item">
+                    <span class="color-box" style="background-color: orange;"></span> Calibration Due Soon
+                </span>
+                <span class="legend-item">
+                    <span class="color-box" style="background-color: red;"></span>Calibration Expired
+                </span>
+                <span class="legend-item">
+                    <span class="color-box" style="background-color: #75caeb;"></span> Reserved
+                </span>
+            </div>
         </div>
 
         <!-- Reserve Device Modal -->
@@ -296,14 +293,9 @@
 
         <div class="table-responsive" id="noncalibrated_table_container" style="display: none;">
 
-            <h5 align="center">Table Legend</h5>
-            <div class="legend">
-                <span class="legend-item">
-                    <span class="color-box" style="background-color: #75caeb;"></span> Reserved
-                </span>
-            </div>
 
-            </br>
+
+
 
             <table id="noncalibrated_table" class="table table-striped table-bordered table-sm">
                 <thead>
@@ -432,7 +424,13 @@
                     {% endfor %}
                 </tbody>
             </table>
-
+            </br>
+            <h5 align="center">Table Legend</h5>
+            <div class="legend">
+                <span class="legend-item">
+                    <span class="color-box" style="background-color: #75caeb;"></span> Reserved
+                </span>
+            </div>
         </div>
 
         <!-- 
@@ -533,11 +531,13 @@
                                                 aria-label="Close"></button>
                                         </div>
                                         <form action="/edit_reservation" method="post">
-                                            <input type="hidden" name="reservation_id" id="reservation_id" value="{{device.reservation.id}}">
+                                            <input type="hidden" name="reservation_id" id="reservation_id"
+                                                value="{{device.reservation.id}}">
                                             <div class="modal-body">
                                                 <input type="hidden" name="device_id" id="hiddenDeviceId">
                                                 <div class="mb-3">
-                                                    <label for="reservation_start_date" class="form-label">Reservation Start
+                                                    <label for="reservation_start_date" class="form-label">Reservation
+                                                        Start
                                                         Date:</label>
                                                     <input type="date" class="form-control" id="reservation_start_date"
                                                         name="reservation_start_date" autocomplete="off" required>
@@ -551,7 +551,8 @@
                                                 <div class="mb-3">
                                                     <label for="project" class="form-label">Project:</label>
                                                     <input type="text" class="form-control" name="project" id="project"
-                                                        placeholder="Project (Optional)" autocomplete="off" aria-label="Project" />
+                                                        placeholder="Project (Optional)" autocomplete="off"
+                                                        aria-label="Project" />
                                                 </div>
                                             </div>
                                             <div class="modal-footer">

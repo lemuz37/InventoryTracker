@@ -1,14 +1,14 @@
 // User-related functions
 
-var reserveModal = document.getElementById('reserveDeviceModal');
-reserveModal.addEventListener('show.bs.modal', function (event) {
+var reserveModal = document.getElementById("reserveDeviceModal");
+reserveModal.addEventListener("show.bs.modal", function (event) {
   // Button that triggered the modal
   var button = event.relatedTarget;
   // Extract the data-device-id attribute from the button
-  var deviceId = button.getAttribute('data-device-id');
+  var deviceId = button.getAttribute("data-device-id");
 
   // Use the value to set the hidden input's value in the modal
-  var hiddenInput = reserveModal.querySelector('#hiddenDeviceId');
+  var hiddenInput = reserveModal.querySelector("#hiddenDeviceId");
 
   hiddenInput.value = deviceId;
 });
@@ -20,17 +20,16 @@ function handleRadioClick(isCalibrated) {
       "block";
     document.getElementById("noncalibrated_table_container").style.display =
       "none";
-      document.getElementById("reservations_table_container").style.display =
+    document.getElementById("reservations_table_container").style.display =
       "none";
   } else if (isCalibrated.value == "False") {
     document.getElementById("calibrated_table_container").style.display =
       "none";
     document.getElementById("noncalibrated_table_container").style.display =
-      "initial";
-      document.getElementById("reservations_table_container").style.display =
+      "block";
+    document.getElementById("reservations_table_container").style.display =
       "none";
-  }
-  else {
+  } else {
     document.getElementById("calibrated_table_container").style.display =
       "none";
     document.getElementById("noncalibrated_table_container").style.display =

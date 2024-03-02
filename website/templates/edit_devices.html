@@ -24,16 +24,18 @@
         {% endif %}
 
         <hr>
-
+        {% if user.admin == True %}
         <form method="POST">
             <div class="table-responsive">
                 <table class="table table-bordered table-striped table-sm" cellspacing="0" width="100%"
-                    id="update_device_table">
+                    id="admin_edit_device_table">
                     <thead>
                         <tr>
-                            {% if user.admin == True %}
+                            <th scope="col" class="text-center" style="width: 200px;">Device Name (hidden)</th>
+                            <th scope="col" class="text-center" style="width: 175px;">Model Number (hidden)</th>
+                            <th scope="col" class="text-center" style="width: 150px;">Serial Number (hidden)</th>
+                            <th scope="col" class="text-center">Owner</th>
                             <th scope="col" class="text-center">Device Category</th>
-                            {% endif %}
                             <th scope="col" class="text-center" style="width: 200px;">Device Name</th>
                             <th scope="col" class="text-center" style="width: 175px;">Model Number</th>
                             <th scope="col" class="text-center" style="width: 150px;">Serial Number</th>
@@ -46,7 +48,19 @@
                     <tbody>
                         {% for device in devices %}
                         <tr>
-                            {% if user.admin == True %}
+                            <td class="text-center">{{device.device_name}}</td>
+                            <td class="text-center">{{device.model_number}}</td>
+                            <td class="text-center">{{device.serial_number}}</td>
+                            <td class="text-center">
+                                <select class="form-control" name="device_owner_{{device.id}}"
+                                    id="device_owner_{{device.id}}">
+                                    <option selected>Select Team</option>
+                                    <option value="Automation">Automation</option>
+                                    <option value="Hardware">Hardware</option>
+                                    <option value="Software">Software</option>
+                                    <option value="System Test">System Test</option>
+                                </select>
+                            </td>
                             <td class="text-center">
                                 <select class="form-control" name="device_category_{{device.id}}"
                                     id="device_category_{{device.id}}">
@@ -62,10 +76,98 @@
                             </td>
                             <td class="text-center"><input type="text" name="device_name_{{device.id}}"
                                     id="device_name_{{device.id}}" class="form-control" autocomplete="off"
-                                    placeholder="{{device.device_name}}" aria-label="{{device.device_name}}"></td>
+                                    placeholder="{{device.device_name}}" aria-label="{{device.device_name}}">
+                            </td>
                             <td class="text-center"><input type="text" name="model_number_{{device.id}}"
                                     id="model_number_{{device.id}}" class="form-control" autocomplete="off"
-                                    placeholder="{{device.model_number}}" aria-label="{{device.model_number}}"></td>
+                                    placeholder="{{device.model_number}}" aria-label="{{device.model_number}}">
+                            </td>
+                            <td class="text-center"><input type="text" name="serial_number_{{device.id}}"
+                                    id="serial_number_{{device.id}}" class="form-control" autocomplete="off"
+                                    placeholder="{{device.serial_number}}" aria-label="{{device.serial_number}}">
+                            </td>
+                            <td class="text-center"><input type="date" name="calStart_{{device.id}}"
+                                    id="calStart_{{device.id}}" class="form-control"
+                                    placeholder="Calibration Start Date" aria-label="Calibration Start Date"></td>
+                            <td class="text-center"><input type="date" name="calEnd_{{device.id}}"
+                                    id="calEnd_{{device.id}}" class="form-control" placeholder="Calibration End Date"
+                                    aria-label="Calibration End Date"></td>
+                            <td class="text-center"><input type="text" name="project_{{device.id}}"
+                                    id="project_{{device.id}}" class="form-control" autocomplete="off"
+                                    placeholder="Project" aria-label="Project"></td>
+                            <td class="text-center"><input type="text" name="location_{{device.id}}"
+                                    id="location_{{device.id}}" class="form-control" autocomplete="off"
+                                    placeholder="Location" aria-label="Location"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div align="center">
+                <button name="update_devices" type="submit" class="btn btn-primary">Update Device(s)</button>
+            </div>
+        </form>
+        {% else %}
+        <form method="POST">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-sm" cellspacing="0" width="100%"
+                    id="edit_device_table">
+                    <thead>
+                        <tr>
+                            {% if user.admin == True %}
+                            <th scope="col" class="text-center" style="width: 200px;">Device Name (hidden)</th>
+                            <th scope="col" class="text-center" style="width: 175px;">Model Number (hidden)</th>
+                            <th scope="col" class="text-center" style="width: 150px;">Serial Number (hidden)</th>
+                            <th scope="col" class="text-center">Owner</th>
+                            <th scope="col" class="text-center">Device Category</th>
+                            {% endif %}
+                            <th scope="col" class="text-center" style="width: 200px;">Device Name</th>
+                            <th scope="col" class="text-center" style="width: 175px;">Model Number</th>
+                            <th scope="col" class="text-center" style="width: 150px;">Serial Number</th>
+                            <th scope="col" class="text-center">Calibration Start</th>
+                            <th scope="col" class="text-center">Calibration End</th>
+                            <th scope="col" class="text-center">Project</th>
+                            <th scope="col" class="text-center">Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for device in devices %}
+                        <tr>
+                            {% if user.admin == True %}
+                            <td class="text-center">{{device.device_name}}</td>
+                            <td class="text-center">{{device.model_number}}</td>
+                            <td class="text-center">{{device.serial_number}}</td>
+                            <td class="text-center">
+                                <select class="form-control" name="device_owner_{{device.id}}"
+                                    id="device_owner_{{device.id}}">
+                                    <option selected>Select Team</option>
+                                    <option value="Automation">Automation</option>
+                                    <option value="Hardware">Hardware</option>
+                                    <option value="Software">Software</option>
+                                    <option value="System Test">System Test</option>
+                                </select>
+                            </td>
+                            <td class="text-center">
+                                <select class="form-control" name="device_category_{{device.id}}"
+                                    id="device_category_{{device.id}}">
+                                    <option selected>Select Device Category</option>
+                                    <option value="ECG">ECG</option>
+                                    <option value="Vitals">Vitals</option>
+                                    <option value="Spirometer">Spirometer</option>
+                                    <option value="Calibration Syringe">Calibration Syringe</option>
+                                    <option value="Simulator">Simulator</option>
+                                    <option value="Scales">Scales</option>
+                                    <option value="Engineering Tools">Engineering Tools</option>
+                                </select>
+                            </td>
+                            <td class="text-center"><input type="text" name="device_name_{{device.id}}"
+                                    id="device_name_{{device.id}}" class="form-control" autocomplete="off"
+                                    placeholder="{{device.device_name}}" aria-label="{{device.device_name}}">
+                            </td>
+                            <td class="text-center"><input type="text" name="model_number_{{device.id}}"
+                                    id="model_number_{{device.id}}" class="form-control" autocomplete="off"
+                                    placeholder="{{device.model_number}}" aria-label="{{device.model_number}}">
+                            </td>
                             <td class="text-center"><input type="text" name="serial_number_{{device.id}}"
                                     id="serial_number_{{device.id}}" class="form-control" autocomplete="off"
                                     placeholder="{{device.serial_number}}" aria-label="{{device.serial_number}}">
@@ -87,19 +189,16 @@
                             <td class="text-center"><input type="text" name="location_{{device.id}}"
                                     id="location_{{device.id}}" class="form-control" autocomplete="off"
                                     placeholder="Location" aria-label="Location"></td>
-
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            <input type="hidden" name="device_category" class="form-control" id="device_category"
-                value="{{device_category}}"></input>
-
             <div align="center">
                 <button name="update_devices" type="submit" class="btn btn-primary">Update Device(s)</button>
             </div>
         </form>
+        {% endif %}
     </div>
     <div class="col">
 
